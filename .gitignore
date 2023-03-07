@@ -1,0 +1,17 @@
+# environment folder
+environment-*/
+
+# python files
+__pycache__
+*.egg-info
+dist/
+
+# test files
+.pytest_cache/
+use_cases/results/
+*.result.json
+.coverage*
+
+# doc files
+# docs/*-sphinx-sources
+docs/*-doc

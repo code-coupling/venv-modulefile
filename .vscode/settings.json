@@ -1,0 +1,36 @@
+{
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/environment-icoco/lib/python3.6/site-packages/",
+        "${workspaceFolder}/src",
+        "${workspaceFolder}/use_cases",
+        "/home/prerequis_codes-public/install/lin-x86-64-cen7/native/SALOME-9.8.0/MEDCOUPLING/lib/python3.6/site-packages/"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/environment-icoco/lib/python3.6/site-packages/",
+        "${workspaceFolder}/src",
+        "${workspaceFolder}/use_cases",
+        "/home/prerequis_codes-public/install/lin-x86-64-cen7/native/SALOME-9.8.0/MEDCOUPLING/lib/python3.6/site-packages/"
+    ],
+    "python.analysis.typeCheckingMode": "off",
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "autoDocstring.docstringFormat": "numpy",
+    "files.eol": "\n",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "editor.rulers": [100],
+    "workbench.colorCustomizations": {
+        "editorRuler.foreground": "#40e9ff"
+    },
+    "[python]": {
+        "editor.rulers":[
+            {
+            "column": 100,
+            "color": "#48946a"
+            }
+        ]
+    },
+}
