@@ -15,9 +15,9 @@ The API rely on ICoCo::MEDDoubleField and ICoCo::MEDIntField for some of the fie
 methods. An implementation for those is provided by the SALOME MEDCoupling library
 (version 9.7+)
 
-This package implements the abstract class :class:`icoco.problem.Problem` in Python following the
+This package implements the abstract class {class}`icoco.problem.Problem` in Python following the
 specifications of the c++ version.
 
-The Python implementation proposed is based on `medcoupling` implementation for fields and `mpi4py` for MPI
+The Python implementation proposed is based on {mod}`medcoupling` implementation for fields and {mod}`mpi4py` for MPI
 communication. Nevertheless, it is possible to use other implementation of such concepts within this
 package.

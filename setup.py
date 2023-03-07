@@ -11,21 +11,18 @@ https://github.com/pypa/sampleproject
 
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
-import os
 import pathlib
 
 here = pathlib.Path(__file__).parent.resolve()
 
 # Get the long description from the README file
-long_description = (here / "src" / "README.md").read_text(encoding="utf-8")
-
+def get_long_description():
+    """Extract README content"""
+    return (here / "src" / "README.md").read_text(encoding="utf-8")
 
 def get_version():
     """Extract the package's version number from the ``VERSION`` file."""
-#    filename = os.path.join(os.path.dirname(__file__), "sources", "c3po", "VERSION")
-    filename = os.path.join(os.path.dirname(__file__), "src", "icoco", "VERSION")
-    with open(filename) as file:
-        return file.read().strip()
+    return (here / "src" / "icoco" / "VERSION").read_text(encoding="utf-8").strip()
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
@@ -53,7 +50,7 @@ setup(
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#summary
-    description="ICoCo python implementation",  # Optional
+    description="ICoCo Python implementation",  # Optional
     # This is an optional longer description of your project that represents
     # the body of text which users will see when they visit PyPI.
     #
@@ -62,7 +59,7 @@ setup(
     #
     # This field corresponds to the "Description" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#description-optional
-    long_description=long_description,  # Optional
+    long_description=get_long_description(),  # Optional
     # Denotes that our long_description is in Markdown; valid values are
     # text/plain, text/x-rst, and text/markdown
     #
