@@ -93,31 +93,33 @@ def read_env(arguments: Tuple[str, str] = None):
     else:
         virtual_env, appli = arguments
 
-        path_to_prepend = ["LD_LIBRARY_PATH", "PATH", "PYTHONPATH"]
-        for envvar, value in os.environ.items():
-            if not envvar.lower().startswith(appli.lower()):
-                continue
-            for path in path_to_prepend:
-                if envvar.endswith(path):
-                    prepend_path(arguments=(virtual_env, appli, path + " " + value.replace(":", " ")))
+    path_to_prepend = ["LD_LIBRARY_PATH", "PYTHONPATH", "PATH"]
+    for envvar, value in os.environ.items():
+        if not envvar.lower().startswith(appli.lower()):
+            continue
 
-            if envvar.endswith("MODULE_USE"):
-                module_use(arguments=(virtual_env, appli, value))
+        for path in path_to_prepend:
+            if envvar.endswith(path):
+                prepend_path(arguments=(virtual_env, appli, path + " " + value.replace(":", " ")))
+                break
 
-            if envvar.endswith("MODULEFILES"):
-                module_load(arguments=(virtual_env, appli, value))
+        if envvar.endswith("MODULE_USE"):
+            module_use(arguments=(virtual_env, appli, value))
 
-            if envvar.endswith("SOURCEFILES"):
-                source_sh(arguments=(virtual_env, appli, value))
+        if envvar.endswith("MODULEFILES"):
+            module_load(arguments=(virtual_env, appli, value))
 
-            if envvar.endswith("ADDITIONAL_EXPORTS"):
-                for var in value.split():
-                    setenv(arguments=(virtual_env, appli, var.replace("=", " ")))
+        if envvar.endswith("SOURCEFILES"):
+            source_sh(arguments=(virtual_env, appli, value))
 
-            if envvar.endswith("ALIASES"):
-                for var in value.split():
-                    set_aliases(arguments=(virtual_env, appli, var.replace("=", " ")))
+        if envvar.endswith("EXPORTS"):
+            for var in value.split():
+                setenv(arguments=(virtual_env, appli, var.replace("=", " ")))
 
-            if envvar.endswith("REMOVE_PATHS"):
-                for var in value.split():
-                    remove_path(arguments=(virtual_env, appli, var.replace("=", " ")))
+        if envvar.endswith("ALIASES"):
+            for var in value.split():
+                set_aliases(arguments=(virtual_env, appli, var.replace("=", " ")))
+
+        if envvar.endswith("REMOVE_PATHS"):
+            for var in value.split():
+                remove_path(arguments=(virtual_env, appli, var.replace("=", " ")))

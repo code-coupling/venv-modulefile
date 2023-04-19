@@ -173,7 +173,7 @@ setup(
         "console_scripts": [
             "venvmod-initialize=venvmod.commands.create_module:initialize",
             "venvmod-add-appli=venvmod.commands.create_module:add_appli",
-            "venvmod-cmd-read_env=venvmod.commands.append_module:read_env",
+            "venvmod-cmd-read-env=venvmod.commands.append_module:read_env",
             "venvmod-cmd-module-use=venvmod.commands.append_module:module_use",
             "venvmod-cmd-module-load=venvmod.commands.append_module:module_load",
             "venvmod-cmd-source-sh=venvmod.commands.append_module:source_sh",
@@ -182,6 +182,7 @@ setup(
             "venvmod-cmd-setenv=venvmod.commands.append_module:setenv",
             "venvmod-cmd-remove-path=venvmod.commands.append_module:remove_path",
             "venvmod-cmd-set-aliases=venvmod.commands.append_module:set_aliases",
+            "venvmod-test-import=venvmod.commands.test_imports:test_imports",
         ],
     },
     # List additional URLs that are relevant to your project as a dict.
