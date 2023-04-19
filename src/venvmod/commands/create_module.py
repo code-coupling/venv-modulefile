@@ -1,0 +1,75 @@
+
+import os
+from pathlib import Path
+from typing import List
+
+from packaging import version
+
+from . import get_parser
+from .append_module import module_load, read_env
+from ..modulefile import (get_version, ModuleInstaller, upgrade_modulefile, create_modulefile,
+                          upgrade_venv)
+
+from ..tools import PACKAGE_NAME, check_raise, remove_duplicates
+
+
+def initialize(virtual_env: Path = None,
+               version_or_path: str = "5.2.0"):
+
+    if virtual_env is None:
+        options = get_parser(description="Initialize Modulefile in venv.",
+                             help_arguments="Log message when the module is loaded.",
+                             with_appli=False,
+                             with_verbose=True)
+        virtual_env = Path(options.virtual_env).absolute()
+
+    if version.parse(get_version()) < version.parse("14.6"):
+
+        install_prefix=virtual_env / "opt" / "modulefiles"
+        if not install_prefix.exists():
+            code = ModuleInstaller(install_prefix=install_prefix,
+                                version_or_path=version_or_path,
+                                cache_directory=virtual_env / ".cache"
+                                ).run(verbose=options.verbose, do_raise=True)
+            if code:
+                return code
+
+            code = upgrade_modulefile(virtual_env=virtual_env, module_prefix=install_prefix)
+            if code:
+                return code
+
+    code = create_modulefile(virtual_env=virtual_env,
+                             module_name=virtual_env.stem,
+                             module_category=PACKAGE_NAME,
+                             log_load=" ".join(options.arguments))
+    if code:
+        return code
+
+    code = upgrade_venv(virtual_env=virtual_env)
+
+def add_appli(virtual_env: Path = None,
+              applis: List[str] = None):
+
+    if virtual_env is None:
+        options = get_parser(description="Initialize Modulefile for an application.",
+                             help_arguments="Appli name(s) to add to the environment.",
+                             with_appli=False,
+                             with_verbose=True)
+        virtual_env = Path(options.virtual_env).absolute()
+
+    fails = []
+    for appli in remove_duplicates(options.arguments + (applis if applis else [])):
+        code = create_modulefile(virtual_env=virtual_env,
+                                module_name=appli,
+                                module_category=f"{PACKAGE_NAME}-{appli}",
+                                log_load=" ".join(options.arguments))
+        if code:
+            fails.append(appli)
+
+        read_env(arguments=(virtual_env, appli))
+        module_load(arguments=(virtual_env, virtual_env.stem, appli))
+
+    check_raise(condition=len(fails) > 0,
+                exception_type=RuntimeError,
+                message=f"The installation of the folowing appli failed : {fails}")
+
