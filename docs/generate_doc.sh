@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+PROJECT_NAME=venvmod
+
 if [[ -z "${PROJECT_NAME}" ]]; then
     echo "'PROJECT_NAME' environment variable must be defined"
 fi

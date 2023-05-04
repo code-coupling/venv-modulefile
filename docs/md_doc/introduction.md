@@ -37,7 +37,7 @@ It is based on [Environment Module](https://modules.readthedocs.io/en/latest/) t
 modify the virtual environment.
 
 The principle is to insert `module load`/`module unload` commands in the `activate` script of a
-virtual env. The `activate` script is also modified such that the las returned code is the one
+virtual env. The `activate` script is also modified such that the last returned code is the one
 provided by the `module load` command.
 
 Two levels of modules can be defined:
@@ -64,7 +64,10 @@ The cli is composed of commands starting by `venvmod-` prefix:
 ### Environment Variable Interface
 
 This interface is called durung the `venvmod-add-appli` command.
-See `venvmod.commands.append_module.read_env` function.
+
+```{eval-rst}
+See :func:`venvmod.commands.append_module.read_env` function.
+```
 
 ### The Python API
 
