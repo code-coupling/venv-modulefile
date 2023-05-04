@@ -196,7 +196,7 @@ setup(
     # what's used to render the link text on PyPI.
     project_urls={  # Optional
         "Bug Reports": "https://github.com/roland-lenain/venv-modulefile/issues",
-        "Doc": "https://icoco-python.readthedocs.io/en/latest/index.html",
+        "Doc": "https://venv-modulefile.readthedocs.io/en/latest/index.html",
         "Source": "https://github.com/roland-lenain/venv-modulefile",
     },
 )
