@@ -20,7 +20,7 @@ def initialize(virtual_env: Path = None,
     Parameters
     ----------
     virtual_env : Path, optional
-        If None, arguments are read from `get_parser` function,
+        If None, arguments are read from :func:`venvmod.commands.get_parser` function,
         else the path to the virtual env, by default None
     version_or_path : str, optional
         Modulefile version to use if not found or version < 4.6.
@@ -67,12 +67,12 @@ def add_appli(virtual_env: Path = None,
               applis: List[str] = None):
     """Add application modulefiles to the environment.
 
-    This call also use the `read_env` function for each appli.
+    This call also use the :func:`venvmod.commands.append_module.read_env` function for each appli.
 
     Parameters
     ----------
     virtual_env : Path, optional
-        If None, arguments are read from `get_parser` function,
+        If None, arguments are read from :func:`venvmod.commands.get_parser` function,
         else the path to the virtual env, by default None
     applis : List[str], optional
         List of module file to create in addition to those given through cli, by default None
