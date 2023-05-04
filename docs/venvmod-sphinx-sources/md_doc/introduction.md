@@ -1,7 +1,14 @@
 # Introduction
 
-[<img src="https://www.python.org/static/community_logos/python-logo-master-v3-TM.png" height="30"/>](Python)
-[<img src="https://raw.githubusercontent.com/cea-hpc/modules/v5.2.0/doc/img/modules_red.svg" height="30" style="background-color: white"/>](Environment_Module)
+```{image} https://www.python.org/static/community_logos/python-logo-master-v3-TM.png
+:alt: Python
+:width: 200px
+```
+
+```{image} https://raw.githubusercontent.com/cea-hpc/modules/v5.2.0/doc/img/modules_red.svg
+:alt: Environment_Module
+:width: 200px
+```
 
 ## Installation
 
