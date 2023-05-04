@@ -9,6 +9,26 @@ def get_parser(description: str,
                with_appli: bool = False,
                with_verbose: bool = False,
                args: List = None) -> argparse.Namespace:
+    """Create a parser for entry-points.
+
+    Parameters
+    ----------
+    description : str
+        Description of the command
+    help_arguments : str, optional
+        Help for the arguments, by default None
+    with_appli : bool, optional
+        True to enable '--appli' option, by default False
+    with_verbose : bool, optional
+        True to enable '--verbise' option, by default False
+    args : List, optional
+        list of arguments if not given throug cli, by default None
+
+    Returns
+    -------
+    argparse.Namespace
+        parsed arguments
+    """
 
     parser = argparse.ArgumentParser(description=description)
 
@@ -26,6 +46,20 @@ def get_parser(description: str,
     return parser.parse_args(args)
 
 def get_module_filename(virtual_env_name: str, appli_name: str = None) -> str:
+    """_summary_
+
+    Parameters
+    ----------
+    virtual_env_name : str
+        name or path to the virtual env
+    appli_name : str, optional
+        name of the application, by default None
+
+    Returns
+    -------
+    str
+        name of the module file associated to the appli
+    """
     virtual_env = Path(virtual_env_name).absolute()
     name = (appli_name if appli_name else virtual_env.name).lower()
     virtual_env = virtual_env / get_module_file_directory(virtual_env)

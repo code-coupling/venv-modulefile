@@ -14,14 +14,42 @@ from .tools import (get_process_result, run_process, check_raise,
                     get_shell_name, get_shell_name_command, PACKAGE_NAME, logger)
 
 def get_module_file_directory(venv_name: str or Path) -> Path:
+    """Gets the modulefile directory
+
+    Parameters
+    ----------
+    venv_name : str or Path
+        Path to virtual env
+
+    Returns
+    -------
+    Path
+        Path prepend by venv_name
+    """
     return Path(venv_name) / "etc" / "modulefiles"
 
 def add_command(filename: Path, line: str):
+    """Appends a command to a modulefile
+
+    Parameters
+    ----------
+    filename : Path
+        File to modify
+    line : str
+        Line to append
+    """
     with open(filename, mode='a', encoding='utf-8') as modulefile:
         modulefile.write(line + "\n")
 
 
 def get_version() -> str:
+    """Gets modulefile version
+
+    Returns
+    -------
+    str
+        version as 'x.y.z', '0.0.0' if not found
+    """
     result = get_process_result(command="module --version", capture_output=True)
     if 'VERSION=' in result.stderr.decode().split()[0]: # version < 4.0
         return result.stderr.decode().split()[0].split("=")[1]
@@ -29,7 +57,19 @@ def get_version() -> str:
         return result.stderr.decode().split()[2]
     return "0.0.0"
 
-def get_version_list(index: int = 0) -> List[int]:
+def get_version_list(index: int = 0) -> List[int] or int:
+    """Gets version as list
+
+    Parameters
+    ----------
+    index : int, optional
+        index in version, by default 0
+
+    Returns
+    -------
+    List[int] or int
+        version numbers or version number if index > 0
+    """
     version = get_version()
     version = [int(id) for id in version.split(".")]
     return version[index-1] if index else version
@@ -48,7 +88,21 @@ class ModuleInstaller:
         self._install_prefix: Path = Path(install_prefix)
         self._cache_directory: Path = Path(cache_directory)
 
-    def run(self, verbose: bool = False, do_raise: bool = True):
+    def run(self, verbose: bool = False, do_raise: bool = True) -> int:
+        """run installer
+
+        Parameters
+        ----------
+        verbose : bool, optional
+            True to enable verbosity, by default False
+        do_raise : bool, optional
+            True to raise if fails, by default True
+
+        Returns
+        -------
+        int
+            return code
+        """
 
         self._cache_directory.mkdir(parents=True, exist_ok=True)
         if Path(self._version_or_path).exists():
@@ -89,7 +143,21 @@ class ModuleInstaller:
                            cwd=build_directory,
                            do_raise=do_raise)
 
-def upgrade_modulefile(virtual_env: Path, module_prefix: Path):
+def upgrade_modulefile(virtual_env: Path, module_prefix: Path) -> int:
+    """Upgrade modulefile in venv
+
+    Parameters
+    ----------
+    virtual_env : Path
+        Path to virtual env
+    module_prefix : Path
+        Modulefile install prefix
+
+    Returns
+    -------
+    int
+        return code
+    """
 
     activate_src = virtual_env / "bin" / "activate"
     check_raise(not activate_src.is_file(), AssertionError,

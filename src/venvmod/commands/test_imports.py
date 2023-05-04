@@ -34,7 +34,19 @@ def _test_module_import(module_name: str, verbose: bool) -> str:
             print("  {}".format(module.__file__))
     return error
 
-def test_imports(arguments: List[str] = None):
+def test_imports(arguments: List[str] = None) -> int:
+    """Test import modules
+
+    Parameters
+    ----------
+    arguments : List[str], optional
+        modules to test, by default None
+
+    Returns
+    -------
+    int
+        return code
+    """
     if arguments is None:
         options = get_parser(description="Test module import.",
                              help_arguments="List of Python modules to test.",

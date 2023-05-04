@@ -12,6 +12,20 @@ def append_command(arguments: Tuple[str, str, str],
                    description: str,
                    help_arguments: str,
                    command: str):
+    """Append a command to a modulefile.
+
+    Parameters
+    ----------
+    arguments : Tuple[str, str, str]
+        If None, arguments are read from `get_parser` function,
+        else `(virtual_env, appli, arguments)` given as str
+    description : str
+        Description of the command provided to `get_parser` function if `arguments` is None.
+    help_arguments : str
+        Help of the command provided to `get_parser` function if `arguments` is None.
+    command : str
+        Name of the command
+    """
     if arguments is None:
         options = get_parser(description=description,
                              help_arguments=help_arguments,
@@ -28,6 +42,15 @@ def append_command(arguments: Tuple[str, str, str],
 
 
 def module_use(arguments: Tuple[str, str, str] = None):
+    """Add a 'module use' command to a modulefile.
+
+    Paths to use are given as str in the last value of `arguments`.
+
+    Parameters
+    ----------
+    arguments : Tuple[str, str, str], optional
+        See `append_command` function, by default None
+    """
     append_command(arguments,
                    description="Add dir(s) to MODULEPATH variable.",
                    help_arguments="path1 path2 ...",
@@ -35,6 +58,15 @@ def module_use(arguments: Tuple[str, str, str] = None):
 
 
 def module_load(arguments: Tuple[str, str, str] = None):
+    """Add a 'module load' command to a modulefile.
+
+    Modules to load are given as str in the last value of `arguments`.
+
+    Parameters
+    ----------
+    arguments : Tuple[str, str, str], optional
+        See `append_command` function, by default None
+    """
     append_command(arguments,
                    description="Load modulefile(s).",
                    help_arguments="module1 module2 ...",
@@ -42,6 +74,15 @@ def module_load(arguments: Tuple[str, str, str] = None):
 
 
 def source_sh(arguments: Tuple[str, str, str] = None):
+    """Add a 'source-sh' command to a modulefile.
+
+    Shell + files to source are given as str in the last value of `arguments`.
+
+    Parameters
+    ----------
+    arguments : Tuple[str, str, str], optional
+        See `append_command` function, by default None
+    """
     append_command(arguments,
                    description="Script(s) to source.",
                    help_arguments="SHELL script1 script2 ...",
@@ -49,6 +90,15 @@ def source_sh(arguments: Tuple[str, str, str] = None):
 
 
 def prepend_path(arguments: Tuple[str, str, str] = None):
+    """Add a 'prepent-path' command to a modulefile.
+
+    Env var + paths to prepend are given as str in the last value of `arguments`.
+
+    Parameters
+    ----------
+    arguments : Tuple[str, str, str], optional
+        See `append_command` function, by default None
+    """
     append_command(arguments,
                    description="Prepend value to environment variable.",
                    help_arguments="ENV_VAR paths/to/add/No1 paths/to/add/No2 ...",
@@ -56,6 +106,15 @@ def prepend_path(arguments: Tuple[str, str, str] = None):
 
 
 def append_path(arguments: Tuple[str, str, str] = None):
+    """Add a 'append-path' command to a modulefile.
+
+    PEnv var + paths to append are given as str in the last value of `arguments`.
+
+    Parameters
+    ----------
+    arguments : Tuple[str, str, str], optional
+        See `append_command` function, by default None
+    """
     append_command(arguments,
                    description="Append value to environment variable.",
                    help_arguments="ENV_VAR paths/to/add/No1 paths/to/add/No2 ...",
@@ -63,6 +122,15 @@ def append_path(arguments: Tuple[str, str, str] = None):
 
 
 def setenv(arguments: Tuple[str, str, str] = None):
+    """Add a 'setenv' command to a modulefile.
+
+    Env var + value to define are given as str in the last value of `arguments`.
+
+    Parameters
+    ----------
+    arguments : Tuple[str, str, str], optional
+        See `append_command` function, by default None
+    """
     append_command(arguments,
                    description="Define environment variable.",
                    help_arguments="ENV_VAR value",
@@ -70,6 +138,15 @@ def setenv(arguments: Tuple[str, str, str] = None):
 
 
 def remove_path(arguments: Tuple[str, str, str] = None):
+    """Add a 'remove-path' command to a modulefile.
+
+    Env var + value to remove are given as str in the last value of `arguments`.
+
+    Parameters
+    ----------
+    arguments : Tuple[str, str, str], optional
+        See `append_command` function, by default None
+    """
     append_command(arguments,
                    description="Remove value from environment variable.",
                    help_arguments="ENV_VAR value",
@@ -77,6 +154,15 @@ def remove_path(arguments: Tuple[str, str, str] = None):
 
 
 def set_aliases(arguments: Tuple[str, str, str] = None):
+    """Add a 'set-aliases' command to a modulefile.
+
+    Alias to define are given as str in the last value of `arguments`.
+
+    Parameters
+    ----------
+    arguments : Tuple[str, str, str], optional
+        See `append_command` function, by default None
+    """
     append_command(arguments,
                    description="Define aliases.",
                    help_arguments="alias command",
@@ -84,6 +170,25 @@ def set_aliases(arguments: Tuple[str, str, str] = None):
 
 
 def read_env(arguments: Tuple[str, str] = None):
+    """Add commands to a modulefile from environment variables.
+
+    Parse `os.environ` to look at variable starting with 'appli' (case insensitive) name.
+
+    For thoses variables, append commands for the following suffixes
+        "LD_LIBRARY_PATH", "PYTHONPATH", "PATH": prepend
+        "MODULE_USE": module use
+        "MODULEFILES": module load
+        "SOURCEFILES": source-sh
+        "EXPORTS": setenv
+        "ALIASES": set-aliases
+        "REMOVE_PATHS": remove-path
+
+    Parameters
+    ----------
+    arguments : Tuple[str, str], optional, by default None
+        If None, arguments are read from `get_parser` function,
+        else `(virtual_env, appli)` given as str
+    """
     if arguments is None:
         options = get_parser(description="Read environment variable to extend modulefile.",
                              with_appli=True)

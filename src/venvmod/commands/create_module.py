@@ -14,7 +14,23 @@ from ..tools import PACKAGE_NAME, check_raise, remove_duplicates
 
 
 def initialize(virtual_env: Path = None,
-               version_or_path: str = "5.2.0"):
+               version_or_path: str = "5.2.0") -> int:
+    """Initialize a venv-modulefile environment
+
+    Parameters
+    ----------
+    virtual_env : Path, optional
+        If None, arguments are read from `get_parser` function,
+        else the path to the virtual env, by default None
+    version_or_path : str, optional
+        Modulefile version to use if not found or version < 4.6.
+        It can be a source directory to avoid donloading, by default "5.2.0"
+
+    Returns
+    -------
+    int
+        return code
+    """
 
     if virtual_env is None:
         options = get_parser(description="Initialize Modulefile in venv.",
@@ -49,6 +65,18 @@ def initialize(virtual_env: Path = None,
 
 def add_appli(virtual_env: Path = None,
               applis: List[str] = None):
+    """Add application modulefiles to the environment.
+
+    This call also use the `read_env` function for each appli.
+
+    Parameters
+    ----------
+    virtual_env : Path, optional
+        If None, arguments are read from `get_parser` function,
+        else the path to the virtual env, by default None
+    applis : List[str], optional
+        List of module file to create in addition to those given through cli, by default None
+    """
 
     if virtual_env is None:
         options = get_parser(description="Initialize Modulefile for an application.",
