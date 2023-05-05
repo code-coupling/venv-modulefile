@@ -85,4 +85,7 @@ def get_module_filename(virtual_env_name: str, appli_name: str = None) -> str:
     module_name = (f"{virtual_env.name}-{appli_name}"
                    if appli_name and appli_name != virtual_env.name
                    else virtual_env.name)
+    print(f"module name = '{module_name}'")
+    print(f"appli name = '{appli_name}'")
+    print(f"venv name = '{virtual_env.name}'")
     return str(get_module_file_directory(virtual_env) / module_name.lower())

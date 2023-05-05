@@ -94,10 +94,11 @@ def add_appli(virtual_env: Path = None,
 
     fails = []
     for appli in remove_duplicates(options.arguments + (applis if applis else [])):
+        appli = appli.lower()
         module_name = f"{virtual_env.stem}-{appli}"
         code = create_modulefile(virtual_env=virtual_env,
-                                module_name=module_name,
-                                module_category=f"{PACKAGE_NAME}-{appli}")
+                                 module_name=module_name,
+                                 module_category=f"{PACKAGE_NAME}-{appli}")
         if code:
             fails.append(appli)
 
