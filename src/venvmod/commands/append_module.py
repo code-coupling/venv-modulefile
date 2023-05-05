@@ -178,10 +178,10 @@ def read_env(arguments: Tuple[str, str] = None):
      - "LD_LIBRARY_PATH", "PYTHONPATH", "PATH": ``prepend``
      - "MODULE_USE": ``module use``
      - "MODULEFILES": ``module load``
-     - "SOURCEFILES": ``source-sh`` for each element separated by ';'
-     - "EXPORTS": ``setenv`` for each element separated by ' '
-     - "ALIASES": ``set-aliases`` for each element separated by ' '
-     - "REMOVE_PATHS": ``remove-path`` for each element separated by ' '
+     - "SOURCEFILES": ``source-sh`` for each element 'shell script [args...]' separated by ';'
+     - "EXPORTS": ``setenv`` for each element 'var=value' separated by ' '
+     - "ALIASES": ``set-aliases`` for each element 'var=value' separated by ' '
+     - "REMOVE_PATHS": ``remove-path`` for each element 'var=value' separated by ' '
 
     Examples
     --------
@@ -225,16 +225,20 @@ def read_env(arguments: Tuple[str, str] = None):
 
         if envvar.endswith("SOURCEFILES"):
             for var in value.split(";"):
-                source_sh(arguments=(virtual_env, appli, var))
+                if var:
+                    source_sh(arguments=(virtual_env, appli, var))
 
         if envvar.endswith("EXPORTS"):
             for var in value.split():
-                setenv(arguments=(virtual_env, appli, var.replace("=", " ")))
+                if var:
+                    setenv(arguments=(virtual_env, appli, var.replace("=", " ")))
 
         if envvar.endswith("ALIASES"):
             for var in value.split():
-                set_aliases(arguments=(virtual_env, appli, var.replace("=", " ")))
+                if var:
+                    set_aliases(arguments=(virtual_env, appli, var.replace("=", " ")))
 
         if envvar.endswith("REMOVE_PATHS"):
             for var in value.split():
-                remove_path(arguments=(virtual_env, appli, var.replace("=", " ")))
+                if var:
+                    remove_path(arguments=(virtual_env, appli, var.replace("=", " ")))
