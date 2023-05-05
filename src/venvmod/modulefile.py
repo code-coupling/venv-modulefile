@@ -197,11 +197,10 @@ set              category             __category__
 set              name                 __name__
 
 proc ModulesHelp { } {
-
-  puts stderr "\tAdds $name to your environment variables,"
+  puts stderr "\tAdds $name to your environment,"
 }
 
-module-whatis "adds $name to your environment variables"
+module-whatis "adds $name to your environment"
 
 __log_load__
 
@@ -240,9 +239,9 @@ def create_modulefile(virtual_env: Path,
     to_replace = ""
     if log_load:
         log_load = log_load.replace('[', '\[').replace(']', '\]')
-        to_replace = 'if [ module-info mode load ] {\n'\
-                        f'    puts stderr "{log_load}"\n'\
-                        '}'
+        to_replace = ( 'if { [ module-info mode load ] } {\n'
+                      f'    puts stderr "{log_load}"\n'
+                       '}')
     module_file = module_file.replace("__log_load__", to_replace)
 
     with open(module_file_name, "w") as mod_file:

@@ -94,15 +94,15 @@ def add_appli(virtual_env: Path = None,
 
     fails = []
     for appli in remove_duplicates(options.arguments + (applis if applis else [])):
+        module_name = f"{virtual_env.stem}-{appli}"
         code = create_modulefile(virtual_env=virtual_env,
-                                module_name=appli,
-                                module_category=f"{PACKAGE_NAME}-{appli}",
-                                log_load=" ".join(options.arguments))
+                                module_name=module_name,
+                                module_category=f"{PACKAGE_NAME}-{appli}")
         if code:
             fails.append(appli)
 
         read_env(arguments=(virtual_env, appli))
-        module_load(arguments=(virtual_env, virtual_env.stem, appli))
+        module_load(arguments=(virtual_env, virtual_env.stem, module_name))
 
     check_raise(condition=len(fails) > 0,
                 exception_type=RuntimeError,

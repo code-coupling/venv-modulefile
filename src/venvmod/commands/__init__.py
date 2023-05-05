@@ -1,8 +1,10 @@
 import argparse
+import logging
 from pathlib import Path
 from typing import Any, List, Tuple
 
 from ..modulefile import get_module_file_directory
+from ..tools import logger
 
 def get_parser(description: str,
                help_arguments: str = None,
@@ -52,8 +54,13 @@ def get_parser(description: str,
                                 metavar=option[0].replace("-","_"),
                                 default=option[1],
                                 help=option[2])
+    parsered = parser.parse_args(args)
+    if with_verbose and parsered.verbose:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
 
-    return parser.parse_args(args)
+    return parsered
 
 def get_module_filename(virtual_env_name: str, appli_name: str = None) -> str:
     """_summary_

@@ -9,7 +9,7 @@ from typing import List
 
 from . import __name__ as PACKAGE_NAME
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(PACKAGE_NAME)
 
 def check_raise(condition: bool, exception_type: Exception, message: str):
     """Chack if a condition is True to raise
