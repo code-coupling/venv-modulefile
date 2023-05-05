@@ -178,7 +178,7 @@ def read_env(arguments: Tuple[str, str] = None):
      - "LD_LIBRARY_PATH", "PYTHONPATH", "PATH": ``prepend``
      - "MODULE_USE": ``module use``
      - "MODULEFILES": ``module load``
-     - "SOURCEFILES": ``source-sh``
+     - "SOURCEFILES": ``source-sh bash``
      - "EXPORTS": ``setenv``
      - "ALIASES": ``set-aliases``
      - "REMOVE_PATHS": ``remove-path``
@@ -224,7 +224,7 @@ def read_env(arguments: Tuple[str, str] = None):
             module_load(arguments=(virtual_env, appli, value))
 
         if envvar.endswith("SOURCEFILES"):
-            source_sh(arguments=(virtual_env, appli, value))
+            source_sh(arguments=(virtual_env, appli, f"bash {value}"))
 
         if envvar.endswith("EXPORTS"):
             for var in value.split():
