@@ -33,11 +33,18 @@ def initialize(virtual_env: Path = None,
     """
 
     if virtual_env is None:
-        options = get_parser(description="Initialize Modulefile in venv.",
-                             help_arguments="Log message when the module is loaded.",
-                             with_appli=False,
-                             with_verbose=True)
+        options = get_parser(
+            description="Initialize Modulefile in venv.",
+            help_arguments="Log message when the module is loaded.",
+            with_appli=False,
+            with_verbose=True,
+            options=[("modulefile-version",
+                      version_or_path,
+                      "Modulefile version to use if not found or version < 4.6."
+                      " It can be a source directory to avoid downloading")])
         virtual_env = Path(options.virtual_env).absolute()
+        if options.modulefile_version:
+            version_or_path = options.modulefile_version
 
     if version.parse(get_version()) < version.parse("14.6"):
 

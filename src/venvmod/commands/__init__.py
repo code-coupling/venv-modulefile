@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from typing import List
+from typing import Any, List, Tuple
 
 from ..modulefile import get_module_file_directory
 
@@ -8,6 +8,7 @@ def get_parser(description: str,
                help_arguments: str = None,
                with_appli: bool = False,
                with_verbose: bool = False,
+               options: List[Tuple[str, Any, str]] = None,
                args: List = None) -> argparse.Namespace:
     """Create a parser for entry-points.
 
@@ -21,6 +22,8 @@ def get_parser(description: str,
         True to enable '--appli' option, by default False
     with_verbose : bool, optional
         True to enable '--verbise' option, by default False
+    options: List[Tuple[str, Any, str]], optional
+        list of options defined as ('--option-name', default, 'help'), by default None
     args : List, optional
         list of arguments if not given throug cli, by default None
 
@@ -42,6 +45,13 @@ def get_parser(description: str,
                         help='Name of the appli modulefile (case insensitive)')
     if help_arguments:
         parser.add_argument('arguments', nargs='+', default=[], help=help_arguments)
+
+    if options:
+        for option in options:
+            parser.add_argument(f"--{option[0]}",
+                                metavar=option[0].replace("-","_"),
+                                default=option[1],
+                                help=option[2])
 
     return parser.parse_args(args)
 
