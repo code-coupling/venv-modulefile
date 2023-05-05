@@ -76,7 +76,7 @@ def module_load(arguments: Tuple[str, str, str] = None):
 def source_sh(arguments: Tuple[str, str, str] = None):
     """Add a 'source-sh' command to a modulefile.
 
-    Shell + files to source are given as str in the last value of ``arguments``.
+    Shell + file to source + args are given as str in the last value of ``arguments``.
 
     Parameters
     ----------
@@ -85,7 +85,7 @@ def source_sh(arguments: Tuple[str, str, str] = None):
     """
     append_command(arguments,
                    description="Script(s) to source.",
-                   help_arguments="SHELL script1 script2 ...",
+                   help_arguments="SHELL script [arg...]",
                    command="source-sh")
 
 
@@ -178,10 +178,10 @@ def read_env(arguments: Tuple[str, str] = None):
      - "LD_LIBRARY_PATH", "PYTHONPATH", "PATH": ``prepend``
      - "MODULE_USE": ``module use``
      - "MODULEFILES": ``module load``
-     - "SOURCEFILES": ``source-sh bash``
-     - "EXPORTS": ``setenv``
-     - "ALIASES": ``set-aliases``
-     - "REMOVE_PATHS": ``remove-path``
+     - "SOURCEFILES": ``source-sh`` for each element separated by ';'
+     - "EXPORTS": ``setenv`` for each element separated by ' '
+     - "ALIASES": ``set-aliases`` for each element separated by ' '
+     - "REMOVE_PATHS": ``remove-path`` for each element separated by ' '
 
     Examples
     --------
@@ -224,7 +224,8 @@ def read_env(arguments: Tuple[str, str] = None):
             module_load(arguments=(virtual_env, appli, value))
 
         if envvar.endswith("SOURCEFILES"):
-            source_sh(arguments=(virtual_env, appli, f"bash {value}"))
+            for var in value.split(";"):
+                source_sh(arguments=(virtual_env, appli, var))
 
         if envvar.endswith("EXPORTS"):
             for var in value.split():
