@@ -26,7 +26,7 @@ def get_module_file_directory(venv_name: str or Path) -> Path:
     Path
         Path prepend by venv_name
     """
-    return Path(venv_name) / "etc" / "modulefiles"
+    return Path(venv_name).absolute() / "etc" / "modulefiles"
 
 def add_command(filename: Path, line: str):
     """Appends a command to a modulefile

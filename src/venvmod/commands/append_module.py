@@ -202,7 +202,7 @@ def read_env(arguments: Tuple[str, str] = None):
         options = get_parser(description="Read environment variable to extend modulefile.",
                              with_appli=True)
         appli = options.appli if options.appli else options.virtual_env
-        appli = str(Path(appli).stem)  #virtual_env may be a path
+        appli = str(Path(appli).name)  #virtual_env may be a path
         virtual_env = options.virtual_env
     else:
         virtual_env, appli = arguments

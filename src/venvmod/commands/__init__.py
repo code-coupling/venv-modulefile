@@ -54,11 +54,15 @@ def get_parser(description: str,
                                 metavar=option[0].replace("-","_"),
                                 default=option[1],
                                 help=option[2])
+
     parsered = parser.parse_args(args)
     if with_verbose and parsered.verbose:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
+
+    if not Path(parsered.virtual_env).absolute().is_dir():
+        raise FileNotFoundError(f"virtual environment '{parsered.virtual_env}' does not exist.")
 
     return parsered
 
@@ -78,6 +82,7 @@ def get_module_filename(virtual_env_name: str, appli_name: str = None) -> str:
         name of the module file associated to the appli
     """
     virtual_env = Path(virtual_env_name).absolute()
-    name = (appli_name if appli_name else virtual_env.name).lower()
-    virtual_env = virtual_env / get_module_file_directory(virtual_env)
-    return str(virtual_env / name)
+    module_name = (f"{virtual_env.name}-{appli_name}"
+                   if appli_name and appli_name != virtual_env.name
+                   else virtual_env.name)
+    return str(get_module_file_directory(virtual_env) / module_name.lower())
