@@ -215,7 +215,7 @@ def read_env(arguments: Tuple[str, str] = None):
         appli_env_vars[envvar] = value
 
     # Source file in first
-    for envvar, value in appli_env_vars:
+    for envvar, value in appli_env_vars.items():
         appli_env_vars[envvar] = value
         if envvar.endswith("SOURCEFILES"):
             for var in value.split(";"):
