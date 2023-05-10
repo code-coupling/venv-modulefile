@@ -1,6 +1,8 @@
 
 import importlib
 from typing import List
+
+from ..tools import remove_duplicates
 from . import get_parser
 
 
@@ -59,7 +61,7 @@ def test_imports(arguments: List[str] = None) -> int:
 
     failed = {}
 
-    for module in set(arguments):
+    for module in remove_duplicates(arguments):
         error = _test_module_import(module, options.verbose)
         if error:
             failed[module] = error

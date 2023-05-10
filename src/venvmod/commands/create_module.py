@@ -5,7 +5,7 @@ from typing import List
 
 from packaging import version
 
-from . import get_parser
+from . import get_std_name, get_parser
 from .append_module import module_load, read_env
 from ..modulefile import (get_version, ModuleInstaller, upgrade_modulefile, create_modulefile,
                           upgrade_venv)
@@ -62,11 +62,13 @@ def initialize(virtual_env: Path = None,
                 return code
 
     code = create_modulefile(virtual_env=virtual_env,
-                             module_name=virtual_env.stem,
+                             module_name=get_std_name(virtual_env.name),
                              module_category=PACKAGE_NAME,
                              log_load=" ".join(options.arguments))
     if code:
         return code
+
+    read_env(arguments=(virtual_env, get_std_name(virtual_env.name)))
 
     code = upgrade_venv(virtual_env=virtual_env)
 
@@ -91,19 +93,20 @@ def add_appli(virtual_env: Path = None,
                              with_appli=False,
                              with_verbose=True)
         virtual_env = Path(options.virtual_env).absolute()
+        virtual_env_name = get_std_name(virtual_env.name)
 
     fails = []
     for appli in remove_duplicates(options.arguments + (applis if applis else [])):
-        appli = appli.lower()
-        module_name = f"{virtual_env.stem}-{appli}"
+        appli_name = get_std_name(appli)
+        module_name = f"{virtual_env_name}-{appli_name}"
         code = create_modulefile(virtual_env=virtual_env,
                                  module_name=module_name,
-                                 module_category=f"{PACKAGE_NAME}-{appli}")
+                                 module_category=f"{PACKAGE_NAME}-{appli_name}")
         if code:
             fails.append(appli)
 
-        read_env(arguments=(virtual_env, appli))
-        module_load(arguments=(virtual_env, virtual_env.stem, module_name))
+        read_env(arguments=(virtual_env, appli_name))
+        module_load(arguments=(virtual_env, virtual_env_name, module_name))
 
     check_raise(condition=len(fails) > 0,
                 exception_type=RuntimeError,

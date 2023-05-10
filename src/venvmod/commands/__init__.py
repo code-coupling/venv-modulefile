@@ -66,12 +66,12 @@ def get_parser(description: str,
 
     return parsered
 
-def get_module_filename(virtual_env_name: str, appli_name: str = None) -> str:
+def get_module_filename(virtual_env: Path, appli_name: str = None) -> str:
     """_summary_
 
     Parameters
     ----------
-    virtual_env_name : str
+    virtual_env : pathlib.Path
         name or path to the virtual env
     appli_name : str, optional
         name of the application, by default None
@@ -81,11 +81,29 @@ def get_module_filename(virtual_env_name: str, appli_name: str = None) -> str:
     str
         name of the module file associated to the appli
     """
-    virtual_env = Path(virtual_env_name).absolute()
-    module_name = (f"{virtual_env.name}-{appli_name}"
-                   if appli_name and appli_name != virtual_env.name
-                   else virtual_env.name)
+    module_name = get_std_name(f"{virtual_env.name}-{appli_name}"
+                               if appli_name and appli_name != virtual_env.name
+                               else virtual_env.name)
     print(f"module name = '{module_name}'")
     print(f"appli name = '{appli_name}'")
     print(f"venv name = '{virtual_env.name}'")
-    return str(get_module_file_directory(virtual_env) / module_name.lower())
+    return str(get_module_file_directory(virtual_env=virtual_env) / module_name)
+
+
+def get_std_name(name: str) -> str:
+    """Transform a name in standard name:
+        - lower case
+        - '_' -> '-'
+
+    Parameters
+    ----------
+    name : str
+        input name
+
+    Returns
+    -------
+    str
+        standardized name
+    """
+
+    return name.lower().replace("_","-")

@@ -13,20 +13,20 @@ import requests
 from .tools import (get_process_result, run_process, check_raise,
                     get_shell_name, get_shell_name_command, PACKAGE_NAME, logger)
 
-def get_module_file_directory(venv_name: str or Path) -> Path:
-    """Gets the modulefile directory
+def get_module_file_directory(virtual_env: Path) -> Path:
+    """Gets the modulefiles directory
 
     Parameters
     ----------
-    venv_name : str or Path
+    virtual_env : Path
         Path to virtual env
 
     Returns
     -------
     Path
-        Path prepend by venv_name
+        virtual_env path + "/etc/modulefiles"
     """
-    return Path(venv_name).absolute() / "etc" / "modulefiles"
+    return virtual_env.absolute() / "etc" / "modulefiles"
 
 def add_command(filename: Path, line: str):
     """Appends a command to a modulefile
@@ -56,6 +56,7 @@ def get_version() -> str:
     if 'Modules' == result.stderr.decode().split()[0]:
         return result.stderr.decode().split()[2]
     return "0.0.0"
+
 
 def get_version_list(index: int = 0) -> List[int] or int:
     """Gets version as list
@@ -143,6 +144,7 @@ class ModuleInstaller:
                            cwd=build_directory,
                            do_raise=do_raise)
 
+
 def upgrade_modulefile(virtual_env: Path, module_prefix: Path) -> int:
     """Upgrade modulefile in venv
 
@@ -210,6 +212,7 @@ conflict $category
 """,
 }
 
+
 def create_modulefile(virtual_env: Path,
                       module_name: str = PACKAGE_NAME,
                       module_category: str = None,
@@ -228,7 +231,7 @@ def create_modulefile(virtual_env: Path,
         Loag edited at load, by default ""
     """
 
-    module_directory = get_module_file_directory(venv_name=virtual_env)
+    module_directory = get_module_file_directory(virtual_env=virtual_env)
     module_directory.mkdir(parents=True, exist_ok=True)
 
     module_file_name = module_directory / module_name
@@ -264,6 +267,7 @@ UNUSE_MODULE_TEMPLATE = """    module unuse "__module_dir__"
     module_unuse_status=( $module_unuse_status $? )
 """
 
+
 def upgrade_venv(virtual_env: Path):  # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     """Ugrade virtual env with modulefile at activate and deactivate.
 
@@ -288,11 +292,11 @@ def upgrade_venv(virtual_env: Path):  # pylint: disable=too-many-branches,too-ma
     header_line = f"# This file is generated from {PACKAGE_NAME}"\
                 " from regular venv or virtualenv file."
 
-    module_directory = get_module_file_directory(venv_name=virtual_env)
+    module_directory = get_module_file_directory(virtual_env=virtual_env)
     unuse_module = UNUSE_MODULE_TEMPLATE.replace("__module_dir__", str(module_directory))
-    unload_module = UNLOAD_MODULE_TEMPLATE.replace("__module_name__", virtual_env.stem)
+    unload_module = UNLOAD_MODULE_TEMPLATE.replace("__module_name__", virtual_env.name)
 
-    load_module = LOAD_MODULE_TEMPLATE.replace("__module_name__", virtual_env.stem)
+    load_module = LOAD_MODULE_TEMPLATE.replace("__module_name__", virtual_env.name)
     use_module = USE_MODULE_TEMPLATE.replace("__module_dir__", str(module_directory))
 
     with open(activate_src, "r") as src_file:

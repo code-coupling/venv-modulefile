@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from typing import Tuple
 
-from . import get_module_filename, get_parser
+from . import get_std_name, get_module_filename, get_parser
 from venvmod.modulefile import add_command
 
 def append_command(arguments: Tuple[str, str, str],
@@ -36,7 +36,7 @@ def append_command(arguments: Tuple[str, str, str],
     else:
         virtual_env, appli, arguments = arguments
 
-    add_command(filename=get_module_filename(virtual_env_name=virtual_env,
+    add_command(filename=get_module_filename(virtual_env=Path(virtual_env).absolute(),
                                              appli_name=appli),
                 line=f"{command} {arguments}")
 
@@ -202,14 +202,14 @@ def read_env(arguments: Tuple[str, str] = None):
         options = get_parser(description="Read environment variable to extend modulefile.",
                              with_appli=True)
         appli = options.appli if options.appli else options.virtual_env
-        appli = str(Path(appli).name)  #virtual_env may be a path
+        appli = get_std_name(str(Path(appli).name))  # virtual_env may be a path
         virtual_env = options.virtual_env
     else:
         virtual_env, appli = arguments
 
     path_to_prepend = ["LD_LIBRARY_PATH", "PYTHONPATH", "PATH"]
     for envvar, value in os.environ.items():
-        if not envvar.lower().startswith(appli.lower()):
+        if not get_std_name(envvar).startswith(appli):
             continue
 
         for path in path_to_prepend:
