@@ -207,6 +207,24 @@ def read_env(arguments: Tuple[str, str] = None):
     else:
         virtual_env, appli = arguments
 
+    # List env vars
+    appli_env_vars = {}
+    for envvar, value in os.environ.items():
+        if not get_std_name(envvar).startswith(appli):
+            continue
+        appli_env_vars[envvar] = value
+
+    # Source file in first
+    for envvar, value in appli_env_vars:
+        appli_env_vars[envvar] = value
+        if envvar.endswith("SOURCEFILES"):
+            for var in value.split(";"):
+                if var:
+                    source_sh(arguments=(virtual_env, appli, var))
+            appli_env_vars.pop(envvar)
+            break
+
+
     path_to_prepend = ["LD_LIBRARY_PATH", "PYTHONPATH", "PATH"]
     for envvar, value in os.environ.items():
         if not get_std_name(envvar).startswith(appli):
@@ -222,11 +240,6 @@ def read_env(arguments: Tuple[str, str] = None):
 
         if envvar.endswith("MODULEFILES"):
             module_load(arguments=(virtual_env, appli, value))
-
-        if envvar.endswith("SOURCEFILES"):
-            for var in value.split(";"):
-                if var:
-                    source_sh(arguments=(virtual_env, appli, var))
 
         if envvar.endswith("EXPORTS"):
             for var in value.split():
