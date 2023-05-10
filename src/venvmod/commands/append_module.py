@@ -227,13 +227,14 @@ def read_env(arguments: Tuple[str, str] = None):
 
     path_to_prepend = ["LD_LIBRARY_PATH", "PYTHONPATH", "PATH"]
     for envvar, value in os.environ.items():
-        if not get_std_name(envvar).startswith(appli):
+        if not get_std_name(envvar).startswith(appli) or not value:
             continue
 
         for var_path in path_to_prepend:
             if envvar.endswith(var_path):
-                for path in reversed(value.split(":")):
-                    prepend_path(arguments=(virtual_env, appli, f"{var_path} {path}"))
+                for var in reversed(value.split(":")):
+                    if var:
+                        prepend_path(arguments=(virtual_env, appli, f"{var_path} {var}"))
                 break
 
         if envvar.endswith("MODULE_USE"):
