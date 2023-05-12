@@ -10,7 +10,7 @@ from typing import List
 
 import requests
 
-from .tools import (get_process_result, run_process, check_raise,
+from .tools import (get_std_name, get_process_result, run_process, check_raise,
                     get_shell_name, get_shell_name_command, PACKAGE_NAME, logger)
 
 def get_module_file_directory(virtual_env: Path) -> Path:
@@ -292,11 +292,12 @@ def upgrade_venv(virtual_env: Path):  # pylint: disable=too-many-branches,too-ma
     header_line = f"# This file is generated from {PACKAGE_NAME}"\
                 " from regular venv or virtualenv file."
 
+    modulefile_name = get_std_name(virtual_env.name)
     module_directory = get_module_file_directory(virtual_env=virtual_env)
     unuse_module = UNUSE_MODULE_TEMPLATE.replace("__module_dir__", str(module_directory))
-    unload_module = UNLOAD_MODULE_TEMPLATE.replace("__module_name__", virtual_env.name)
+    unload_module = UNLOAD_MODULE_TEMPLATE.replace("__module_name__", modulefile_name)
 
-    load_module = LOAD_MODULE_TEMPLATE.replace("__module_name__", virtual_env.name)
+    load_module = LOAD_MODULE_TEMPLATE.replace("__module_name__", modulefile_name)
     use_module = USE_MODULE_TEMPLATE.replace("__module_dir__", str(module_directory))
 
     with open(activate_src, "r") as src_file:

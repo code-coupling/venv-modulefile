@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, List, Tuple
 
 from ..modulefile import get_module_file_directory
-from ..tools import logger
+from ..tools import logger, get_std_name
 
 def get_parser(description: str,
                help_arguments: str = None,
@@ -88,22 +88,3 @@ def get_module_filename(virtual_env: Path, appli_name: str = None) -> str:
     print(f"appli name = '{appli_name}'")
     print(f"venv name = '{virtual_env.name}'")
     return str(get_module_file_directory(virtual_env=virtual_env) / module_name)
-
-
-def get_std_name(name: str) -> str:
-    """Transform a name in standard name:
-        - lower case
-        - '_' -> '-'
-
-    Parameters
-    ----------
-    name : str
-        input name
-
-    Returns
-    -------
-    str
-        standardized name
-    """
-
-    return name.lower().replace("_","-")

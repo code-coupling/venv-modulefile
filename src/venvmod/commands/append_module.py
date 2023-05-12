@@ -5,7 +5,8 @@ import os
 from pathlib import Path
 from typing import Tuple
 
-from . import get_std_name, get_module_filename, get_parser
+from ..tools import get_std_name
+from . import get_module_filename, get_parser
 from venvmod.modulefile import add_command
 
 def append_command(arguments: Tuple[str, str, str],

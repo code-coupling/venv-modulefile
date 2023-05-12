@@ -5,7 +5,8 @@ from typing import List
 
 from packaging import version
 
-from . import get_std_name, get_parser
+from ..tools import get_std_name
+from . import get_parser
 from .append_module import module_load, read_env
 from ..modulefile import (get_version, ModuleInstaller, upgrade_modulefile, create_modulefile,
                           upgrade_venv)
@@ -35,13 +36,16 @@ def initialize(virtual_env: Path = None,
     if virtual_env is None:
         options = get_parser(
             description="Initialize Modulefile in venv.",
-            help_arguments="Log message when the module is loaded.",
+            help_arguments=None,
             with_appli=False,
             with_verbose=True,
             options=[("modulefile-version",
                       version_or_path,
                       "Modulefile version to use if not found or version < 4.6."
-                      " It can be a source directory to avoid downloading")])
+                      " It can be a source directory to avoid downloading"),
+                     ("activate-log",
+                      "",
+                      "Log message when the module is loaded.")])
         virtual_env = Path(options.virtual_env).absolute()
         if options.modulefile_version:
             version_or_path = options.modulefile_version
@@ -64,7 +68,7 @@ def initialize(virtual_env: Path = None,
     code = create_modulefile(virtual_env=virtual_env,
                              module_name=get_std_name(virtual_env.name),
                              module_category=PACKAGE_NAME,
-                             log_load=" ".join(options.arguments))
+                             log_load=options.activate_log)
     if code:
         return code
 

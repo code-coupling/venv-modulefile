@@ -118,3 +118,22 @@ def remove_duplicates(input_list: List) -> List:
         Output list.
     """
     return [value for index, value in enumerate(input_list) if value not in input_list[index+1:]]
+
+
+def get_std_name(name: str) -> str:
+    """Transform a name in standard name:
+        - lower case
+        - '_' -> '-'
+
+    Parameters
+    ----------
+    name : str
+        input name
+
+    Returns
+    -------
+    str
+        standardized name
+    """
+
+    return name.lower().replace("_","-")
