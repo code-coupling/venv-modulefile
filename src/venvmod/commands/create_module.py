@@ -110,7 +110,7 @@ def add_appli(virtual_env: Path = None,
             fails.append(appli)
 
         read_env(arguments=(virtual_env, appli_name))
-        module_load(arguments=(virtual_env, virtual_env_name, module_name))
+        module_load(arguments=(virtual_env, "", module_name))
 
     check_raise(condition=len(fails) > 0,
                 exception_type=RuntimeError,
