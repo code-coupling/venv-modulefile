@@ -37,9 +37,12 @@ def append_command(arguments: Tuple[str, str, str],
     else:
         virtual_env, appli, arguments = arguments
 
-    add_command(filename=get_module_filename(virtual_env=Path(virtual_env).absolute(),
-                                             appli_name=appli),
-                line=f"{command} {arguments}")
+    filename=get_module_filename(virtual_env=Path(virtual_env).absolute(),
+                                             appli_name=appli)
+    if not Path(filename).exists():
+        raise FileNotFoundError(f"modulefile {filename} not found.")
+
+    add_command(filename=filename, line=f"{command} {arguments}")
 
 
 def module_use(arguments: Tuple[str, str, str] = None):

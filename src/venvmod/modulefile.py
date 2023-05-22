@@ -11,7 +11,7 @@ from typing import List
 import requests
 
 from .tools import (get_std_name, get_process_result, run_process, check_raise,
-                    get_shell_name, get_shell_name_command, PACKAGE_NAME, logger)
+                    get_shell_name, PACKAGE_NAME, logger)
 
 def get_module_file_directory(virtual_env: Path) -> Path:
     """Gets the modulefiles directory
@@ -183,8 +183,7 @@ def upgrade_modulefile(virtual_env: Path, module_prefix: Path) -> int:
         for line in src_lines:
             tmp_file.write(line)
             if "you cannot run it directly" in line:
-                tmp_file.write("\n. {}{}$(python3 -c {})\n".format(
-                    init_file_path, os.sep, get_shell_name_command()))
+                tmp_file.write("\n. {}{}$(ps -ocomm= -q $$)\n".format(init_file_path, os.sep))
     pathlib.Path.replace(activate_tmp, activate_src)
 
     return 0

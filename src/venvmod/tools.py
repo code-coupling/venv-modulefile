@@ -1,9 +1,8 @@
 """Regroups tool for the package.
 """
 import logging
-import os
 from pathlib import Path
-import shlex
+import shellingham
 from subprocess import run as _run_process, CompletedProcess, PIPE
 from typing import List
 
@@ -33,17 +32,6 @@ def check_raise(condition: bool, exception_type: Exception, message: str):
         raise exception_type(message)
 
 
-def get_shell_name_command() -> str:
-    """Gets command to get shell name..
-
-    Returns
-    -------
-    str
-        Command as str.
-    """
-    return '"import os; print(os.path.basename(os.readlink(os.path.join(os.sep, \'proc\', str(os.getppid()), \'exe\'))))"'
-    # return '"import os; print(os.path.basename(os.environ[\'SHELL\']))"'
-
 def get_shell_name() -> str:
     """Gets current shell name.
 
@@ -52,8 +40,18 @@ def get_shell_name() -> str:
     str
         shell name
     """
-    return os.path.basename(os.environ["SHELL"])
-    return os.path.basename(os.readlink(os.path.join(os.sep, "proc", str(os.getppid()), "exe")))
+    return shellingham.detect_shell()[0]
+
+
+def get_shell_command() -> str:
+    """Gets current shell name.
+
+    Returns
+    -------
+    str
+        shell command
+    """
+    return shellingham.detect_shell()[1]
 
 
 def get_process_result(command: str, capture_output: bool, cwd: str or Path = None) -> CompletedProcess:
@@ -75,7 +73,7 @@ def get_process_result(command: str, capture_output: bool, cwd: str or Path = No
     """
 
     pipe = PIPE if capture_output else None
-    return _run_process([get_shell_name(), '-c', command], stderr=pipe, stdout=pipe, cwd=cwd)
+    return _run_process([get_shell_command(), '-c', command], stderr=pipe, stdout=pipe, cwd=cwd)
 
 
 def run_process(command: str, verbose: bool, do_raise: bool, cwd: str or Path = None) -> int:

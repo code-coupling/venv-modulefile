@@ -15,6 +15,8 @@ environment.
 It is based on [Environment Module](https://modules.readthedocs.io/en/latest/) to
 modify the virtual environment.
 
+See [source documentation](src/README.md) for more details.
+
 ## Quick start
 
 ```bash

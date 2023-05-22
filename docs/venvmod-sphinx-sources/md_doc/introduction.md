@@ -36,11 +36,9 @@ Python virtual environment.
 It is based on [Environment Module](https://modules.readthedocs.io/en/latest/) to
 modify the virtual environment.
 
-The principle is to insert
-[module load](https://modules.readthedocs.io/en/latest/module.html?highlight=load#subcmd-load)/
-[module unload](https://modules.readthedocs.io/en/latest/module.html?highlight=unload#subcmd-unload)
-commands in the `activate` script of a virtual env. The `activate` script is also modified such
-that the last returned code is the one provided by the `module load` command.
+The principle is to insert `module load`/`module unload` commands in the `activate` script of a
+virtual env. The `activate` script is also modified such that the last returned code is the one
+provided by the `module load` command.
 
 Two levels of modules can be defined:
 
