@@ -38,18 +38,29 @@ The list of available commands is the following:
   the virtual environment with modulefile.
 
 - The following commands modify the modulefile of the virtual environment:
-  - `venvmod-cmd-append-path` / `venvmod-cmd-prepend-path`
-  - `venvmod-cmd-module-load`:
-  - `venvmod-cmd-module-use`
-  - `venvmod-cmd-read-env`
-  - `venvmod-cmd-remove-path`
-  - `venvmod-cmd-setenv`
-  - `venvmod-cmd-set-aliases`
-  - `venvmod-cmd-source-sh`
+  - `venvmod-cmd-append-path` / `venvmod-cmd-prepend-path`: modifies an environment variable
+  - `venvmod-cmd-module-load`: loads a modulefile
+  - `venvmod-cmd-module-use`: adds a search path for modulefile
+  - `venvmod-cmd-remove-path`: removes path from environment variable
+  - `venvmod-cmd-setenv`: defines an environment variable
+  - `venvmod-cmd-set-aliases`: defines an alias
+  - `venvmod-cmd-source-sh`: sources a script
+
+- `venvmod-cmd-read-env`: reads modifications to do from environment variable:
+  - `[NAME]_LD_LIBRARY_PATH`, `[NAME]_PYTHONPATH`, `[NAME]_PATH`: ``prepend`` for each element separated by ':'
+  - `[NAME]_MODULE_USE`: ``module use`` for each element 'module' separated by ' '
+  - `[NAME]_MODULEFILES`: ``module load`` for each element '/path/' separated by ' '
+  - `[NAME]_SOURCEFILES`: ``source-sh`` for each element 'shell script [args...]' separated by ';'
+  - `[NAME]_EXPORTS`: ``setenv`` for each element 'var=value' separated by ' '
+  - `[NAME]_ALIASES`: ``set-aliases`` for each element 'var="value"' separated by ' '
+  - `[NAME]_REMOVE_PATHS`: ``remove-path`` for each element 'var=value' separated by ' '
+  where `[NAME]` is the name of the environment module (case insensitive, "-" and "." are replaced by "_").
 
 - `venvmod-add-appli` allows to create sub modulefile. `--appli` option of the above commands
   permit to modify these modulefiles.
 
 - `venvmod-test-import`: tests the import of modules given as argument
 
-See `--help` option for cli description.
+See `--help` option for cli description of each command.
+
+The sequence to modify the environment respects the sequence of call of the different functions.
