@@ -54,12 +54,12 @@ def initialize(virtual_env: Path = None,
 
     if version.parse(get_version()) < version.parse("14.6"):
 
-        install_prefix=virtual_env / "opt" / "modulefiles"
+        install_prefix = virtual_env / "opt" / "modulefiles"
         if not (install_prefix / "init").exists():
             code = ModuleInstaller(install_prefix=install_prefix,
-                                version_or_path=version_or_path,
-                                cache_directory=virtual_env / ".cache"
-                                ).run(verbose=options.verbose, do_raise=True)
+                                   version_or_path=version_or_path,
+                                   cache_directory=virtual_env / ".cache").run(
+                                       verbose=options.verbose, do_raise=True)
             if code:
                 return code
 

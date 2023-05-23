@@ -11,7 +11,8 @@ from packaging import version
 import requests
 
 from venvmod.tools import (get_std_name, get_process_result, run_process, check_raise,
-                    get_shell_name, PACKAGE_NAME, logger)
+                           get_shell_name, PACKAGE_NAME, logger)
+
 
 def get_module_file_directory(virtual_env: Path) -> Path:
     """Gets the modulefiles directory
@@ -27,6 +28,7 @@ def get_module_file_directory(virtual_env: Path) -> Path:
         virtual_env path + "/etc/modulefiles"
     """
     return virtual_env.absolute() / "etc" / "modulefiles"
+
 
 def add_command(filename: Path, line: str):
     """Appends a command to a modulefile
@@ -218,7 +220,7 @@ __log_load__
 conflict $category
 
 """,
-}
+    }
 
 
 def create_modulefile(virtual_env: Path,
@@ -250,7 +252,7 @@ def create_modulefile(virtual_env: Path,
     to_replace = ""
     if log_load:
         log_load = log_load.replace('[', r'\[').replace(']', r'\]')
-        to_replace = ( 'if { [ module-info mode load ] } {\n'
+        to_replace = ('if { [ module-info mode load ] } {\n'
                       f'    puts stderr "{log_load}"\n'
                        '}')
     module_file = module_file.replace("__log_load__", to_replace)
@@ -260,6 +262,7 @@ def create_modulefile(virtual_env: Path,
         return 0
 
     return 1
+
 
 USE_MODULE_TEMPLATE = """module use "__module_dir__"
 module_use_status=( $module_use_status $? )
@@ -298,7 +301,7 @@ def upgrade_venv(virtual_env: Path):  # pylint: disable=too-many-branches,too-ma
                 f'"activate" file is expected in {bin_dir}.')
 
     header_line = f"# This file is generated from {PACKAGE_NAME}"\
-                " from regular venv or virtualenv file."
+                  " from regular venv or virtualenv file."
 
     modulefile_name = get_std_name(virtual_env.name)
     module_directory = get_module_file_directory(virtual_env=virtual_env)
@@ -354,8 +357,8 @@ done
             elif "unset -f deactivate" in line:
                 to_write = (1, "        _test_deactivate_status\n        return $?\n")
             elif "reset old environment variables" in line:
-                to_write = (-1, "\n    # Unload non-Python dependencies\n"\
-                    + unload_module + unuse_module + "\n")
+                to_write = (-1, "\n    # Unload non-Python dependencies\n"
+                           + unload_module + unuse_module + "\n")
                 reset_is_done += 1
             elif "deactivate nondestructive" in line:
                 to_write = (1, "\n# Load non-Python dependencies\n" + use_module + load_module)

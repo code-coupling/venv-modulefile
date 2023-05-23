@@ -36,6 +36,7 @@ def _test_module_import(module_name: str, verbose: bool) -> str:
             print(f"  {module.__file__}")
     return error
 
+
 def test_imports(arguments: List[str] = None) -> int:
     """Test import modules
 

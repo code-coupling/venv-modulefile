@@ -11,6 +11,7 @@ from venvmod import __name__ as PACKAGE_NAME
 
 logger = logging.getLogger(PACKAGE_NAME)
 
+
 def check_raise(condition: bool, exception_type: Exception, message: str):
     """Chack if a condition is True to raise
 
@@ -76,7 +77,8 @@ def get_process_result(command: str,
     """
 
     pipe = PIPE if capture_output else None
-    return _run_process([get_shell_command(), '-c', command], stderr=pipe, stdout=pipe, cwd=cwd)  # pylint: disable=subprocess-run-check
+    return _run_process([get_shell_command(), '-c', command],
+                        stderr=pipe, stdout=pipe, cwd=cwd)  # pylint: disable=subprocess-run-check
 
 
 def run_process(command: str, verbose: bool, do_raise: bool, cwd: str or Path = None) -> int:
@@ -137,4 +139,4 @@ def get_std_name(name: str) -> str:
         standardized name
     """
 
-    return name.lower().replace("_","-")
+    return name.lower().replace("_", "-")

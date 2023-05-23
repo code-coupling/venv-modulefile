@@ -8,7 +8,8 @@ from typing import Any, List, Tuple
 from ..modulefile import get_module_file_directory
 from ..tools import logger, get_std_name
 
-def get_parser(# name: str,  # pylint: disable=too-many-arguments
+
+def get_parser(  # name: str,  # pylint: disable=too-many-arguments
                description: str,  # pylint: disable=too-many-arguments
                positionals: List[Tuple[str, Any, str, Any]] = None,
                with_appli: bool = False,
@@ -47,12 +48,12 @@ def get_parser(# name: str,  # pylint: disable=too-many-arguments
 
     if with_appli:
         parser.add_argument('--appli', metavar='appli', default="",
-                        help='Name of the appli modulefile (case insensitive)')
+                            help='Name of the appli modulefile (case insensitive)')
     if positionals:
         for positional in positionals:
             print("get_parser positional", positional)
             parser.add_argument(positional[0],
-                                metavar=positional[0].replace("-","_"),
+                                metavar=positional[0].replace("-", "_"),
                                 default=positional[1],
                                 help=positional[2],
                                 nargs=positional[3])
@@ -60,7 +61,7 @@ def get_parser(# name: str,  # pylint: disable=too-many-arguments
     if options:
         for option in options:
             parser.add_argument(f"--{option[0]}",
-                                metavar=option[0].replace("-","_"),
+                                metavar=option[0].replace("-", "_"),
                                 default=option[1],
                                 help=option[2])
 
@@ -74,6 +75,7 @@ def get_parser(# name: str,  # pylint: disable=too-many-arguments
         raise FileNotFoundError(f"virtual environment '{parsered.virtual_env}' does not exist.")
 
     return parsered
+
 
 def get_module_filepath(virtual_env: Path, appli_name: str = None) -> str:
     """_summary_

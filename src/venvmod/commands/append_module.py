@@ -10,6 +10,7 @@ from venvmod.modulefile import add_command
 
 from . import get_module_filepath, get_parser
 
+
 def append_command(arguments: Tuple[str, str, str],
                    description: str,
                    positionals: List[Tuple[str, Any, str, Any]],
@@ -45,7 +46,7 @@ def append_command(arguments: Tuple[str, str, str],
     else:
         virtual_env, appli, arguments = arguments
 
-    filepath=get_module_filepath(virtual_env=Path(virtual_env).absolute(), appli_name=appli)
+    filepath = get_module_filepath(virtual_env=Path(virtual_env).absolute(), appli_name=appli)
 
     add_command(filename=filepath, line=f"{command} {arguments}")
 
@@ -96,7 +97,7 @@ def source_sh(arguments: Tuple[str, str, str] = None):
                    description="Script(s) to source.",
                    positionals=[("SHELL", [], "Shell name", 1),
                                 ("SCRIPT", [], "Script path", 1),
-                                ("ARG", [], "Script arguments", 1),],
+                                ("ARG", [], "Script arguments", 1)],
                    command="source-sh")
 
 
@@ -237,7 +238,6 @@ def read_env(arguments: Tuple[str, str] = None):  # pylint: disable=too-many-bra
             appli_env_vars.pop(envvar)
             break
 
-
     path_to_prepend = ["LD_LIBRARY_PATH", "PYTHONPATH", "PATH"]
     for envvar, value in os.environ.items():
         if not get_std_name(envvar).startswith(appli) or not value:
@@ -259,7 +259,7 @@ def read_env(arguments: Tuple[str, str] = None):  # pylint: disable=too-many-bra
         for suffix, function in {
                 "EXPORTS": setenv,
                 "ALIASES": set_aliases,
-                "REMOVE_PATHS":remove_path}.items():
+                "REMOVE_PATHS": remove_path}.items():
             if envvar.endswith(suffix):
                 for var in value.split():
                     if var:
