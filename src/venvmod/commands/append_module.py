@@ -31,15 +31,16 @@ def append_command(arguments: Tuple[str, str, str],
     if arguments is None:
         options = get_parser(description=description,
                              positionals=positionals,
-                             with_appli=True)
+                             with_appli=True,
+                             with_verbose=True)
         virtual_env = options.virtual_env
-        logger.debug("append_command virtual_env %s", virtual_env)
+        logger.debug("append_command virtual_env '%s'", virtual_env)
         appli = options.appli
-        logger.debug("append_command appli %s", appli)
+        logger.debug("append_command appli '%s'", appli)
         arguments = ""
         for positional in positionals:
             values = vars(options)[positional[0]]
-            logger.debug("append_command positional %s %s", positional, values)
+            logger.debug("append_command positional '%s': '%s'", positional, values)
             arguments += " " + " ".join(values)
     else:
         virtual_env, appli, arguments = arguments

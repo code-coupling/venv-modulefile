@@ -18,7 +18,7 @@ def venvmod_cmd(args: List[str], xfail: bool, err_msg: str = None):
     xfail : bool
         Expeted to fail if True
     """
-    result = subprocess.run(args=args,
+    result = subprocess.run(args=args + ["--verbose"],
                  stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     success = (result.returncode != 0) if xfail else (result.returncode == 0)
     if not success:
