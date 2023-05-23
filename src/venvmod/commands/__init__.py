@@ -13,7 +13,6 @@ def get_parser(  # name: str,  # pylint: disable=too-many-arguments
                description: str,  # pylint: disable=too-many-arguments
                positionals: List[Tuple[str, Any, str, Any]] = None,
                with_appli: bool = False,
-               with_verbose: bool = False,
                options: List[Tuple[str, Any, str]] = None,
                args: List = None) -> argparse.Namespace:
     """Create a parser for entry-points.
@@ -26,8 +25,6 @@ def get_parser(  # name: str,  # pylint: disable=too-many-arguments
         list of positionals ('name', default, 'help', nargs), by default None
     with_appli : bool, optional
         True to enable '--appli' option, by default False
-    with_verbose : bool, optional
-        True to enable '--verbise' option, by default False
     options: List[Tuple[str, Any, str]], optional
         list of options defined as ('--option-name', default, 'help'), by default None
     args : List, optional
@@ -41,10 +38,10 @@ def get_parser(  # name: str,  # pylint: disable=too-many-arguments
 
     parser = argparse.ArgumentParser(description=description)
 
-    parser.add_argument("virtual_env", help="Path to the virtual env to modify")
+    parser.add_argument("virtual_env", metavar="VIRTUAL_ENV",
+                        help="Path to the virtual env to modify")
 
-    if with_verbose:
-        parser.add_argument('--verbose', action='store_true', help='To display the result.')
+    parser.add_argument('--verbose', action='store_true', help='To display the result.')
 
     if with_appli:
         parser.add_argument('--appli', metavar='appli', default="",
@@ -66,7 +63,7 @@ def get_parser(  # name: str,  # pylint: disable=too-many-arguments
                                 help=option[2])
 
     parsered = parser.parse_args(args)
-    if with_verbose and parsered.verbose:
+    if parsered.verbose:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)

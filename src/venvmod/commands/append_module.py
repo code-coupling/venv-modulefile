@@ -32,8 +32,7 @@ def append_command(arguments: Tuple[str, str, str],
     if arguments is None:
         options = get_parser(description=description,
                              positionals=positionals,
-                             with_appli=True,
-                             with_verbose=True)
+                             with_appli=True)
         virtual_env = options.virtual_env
         logger.debug("append_command virtual_env '%s'", virtual_env)
         appli = options.appli
@@ -97,7 +96,7 @@ def source_sh(arguments: Tuple[str, str, str] = None):
                    description="Script(s) to source.",
                    positionals=[("SHELL", [], "Shell name", 1),
                                 ("SCRIPT", [], "Script path", 1),
-                                ("ARG", [], "Script arguments", 1)],
+                                ("ARG", [], "Script arguments", "*")],
                    command="source-sh")
 
 
@@ -226,11 +225,16 @@ def read_env(arguments: Tuple[str, str] = None):  # pylint: disable=too-many-bra
 
     # List env vars
     appli_env_vars = {envvar: value for envvar, value in os.environ.items()
-                      if get_std_name(envvar).startswith(appli)}
+                      if get_std_name(envvar).startswith(appli.replace('.', '_'))}
+
+    print(f"read_env: os.environ = '{os.environ}'")
+    print(f"read_env: appli_env_vars = '{appli_env_vars}'")
+
+    logger.debug("read_env: os.environ = '%s'", os.environ)
+    logger.debug("read_env: appli_env_vars = '%s'", appli_env_vars)
 
     # Source file in first
     for envvar, value in appli_env_vars.items():
-        appli_env_vars[envvar] = value
         if envvar.endswith("SOURCEFILES"):
             for var in value.split(";"):
                 if var:
@@ -239,9 +243,7 @@ def read_env(arguments: Tuple[str, str] = None):  # pylint: disable=too-many-bra
             break
 
     path_to_prepend = ["LD_LIBRARY_PATH", "PYTHONPATH", "PATH"]
-    for envvar, value in os.environ.items():
-        if not get_std_name(envvar).startswith(appli) or not value:
-            continue
+    for envvar, value in appli_env_vars.items():
 
         for var_path in path_to_prepend:
             if envvar.endswith(var_path):

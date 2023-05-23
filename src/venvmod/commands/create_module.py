@@ -41,12 +41,11 @@ def initialize(virtual_env: Path = None,
             description="Initialize Modulefile in venv.",
             positionals=None,
             with_appli=False,
-            with_verbose=True,
             options=[("modulefile-version", version_or_path,
                       "Modulefile version to use if not found or version < 4.6."
                       " It can be a source directory to avoid downloading"),
                      ("activate-log", "", "Log message when the module is loaded."),
-                     ("--read-env", False, "Read environment variables. 'See cmd-read-env'")])
+                     ("read-env", False, "Read environment variables. 'See cmd-read-env'")])
         virtual_env = Path(options.virtual_env).absolute()
         if options.modulefile_version:
             version_or_path = options.modulefile_version
@@ -103,9 +102,8 @@ def add_appli(virtual_env: Path = None,
                              positionals=[("APPLI", [],
                                           "Appli name(s) to add to the environment.", '+')],
                              with_appli=False,
-                             with_verbose=True,
                              options=[
-                                 ("--read-env", False,
+                                 ("read-env", False,
                                   "Read environment variables. 'See cmd-read-env'")
                              ])
         virtual_env = Path(options.virtual_env).absolute()

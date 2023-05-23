@@ -60,6 +60,12 @@ def get_version() -> str:
         version as 'x.y.z', '0.0.0' if not found
     """
     result = get_process_result(command="module --version", capture_output=True)
+    print(f"get_version: {result}")
+    print(f"get_version: {result.stderr.decode()}")
+    print(f"get_version: {result.stdout.decode()}")
+    logger.debug(f"get_version: {result}")
+    logger.debug(f"get_version: {result.stderr.decode()}")
+    logger.debug(f"get_version: {result.stdout.decode()}")
     if 'VERSION=' in result.stderr.decode().split()[0]: # version < 4.0
         return result.stderr.decode().split()[0].split("=")[1]
     if 'Modules' == result.stderr.decode().split()[0]:

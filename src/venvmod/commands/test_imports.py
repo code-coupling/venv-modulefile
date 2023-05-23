@@ -33,7 +33,10 @@ def _test_module_import(module_name: str, verbose: bool) -> str:
         if error:
             print(f"  FAILED {error}")
         else:
-            print(f"  {module.__file__}")
+            if hasattr(module,"__file__"):
+                print(f"  {module.__file__}")
+            elif hasattr(module,"__name__"):
+                print(f"  {module.__name__}")
     return error
 
 
@@ -53,8 +56,7 @@ def test_imports(arguments: List[str] = None) -> int:
     if arguments is None:
         options = get_parser(description="Test module import.",
                              positionals=[("MODULE", [], "List of Python modules to test.", '+')],
-                             with_appli=False,
-                             with_verbose=True)
+                             with_appli=False)
         arguments = options.MODULE
 
     if options.verbose:
