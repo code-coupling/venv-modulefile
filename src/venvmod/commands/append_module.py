@@ -227,9 +227,6 @@ def read_env(arguments: Tuple[str, str] = None):  # pylint: disable=too-many-bra
     appli_env_vars = {envvar: value for envvar, value in os.environ.items()
                       if get_std_name(envvar).startswith(appli.replace('.', '_'))}
 
-    print(f"read_env: os.environ = '{os.environ}'")
-    print(f"read_env: appli_env_vars = '{appli_env_vars}'")
-
     logger.debug("read_env: os.environ = '%s'", os.environ)
     logger.debug("read_env: appli_env_vars = '%s'", appli_env_vars)
 

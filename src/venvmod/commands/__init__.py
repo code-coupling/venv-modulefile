@@ -48,7 +48,6 @@ def get_parser(  # name: str,  # pylint: disable=too-many-arguments
                             help='Name of the appli modulefile (case insensitive)')
     if positionals:
         for positional in positionals:
-            print("get_parser positional", positional)
             parser.add_argument(positional[0],
                                 metavar=positional[0].replace("-", "_"),
                                 default=positional[1],
