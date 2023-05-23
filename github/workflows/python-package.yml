@@ -24,7 +24,7 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install jq tool
+    - name: Install tcl
       run: |
         sudo apt-get update
         sudo apt-get install tcl8.6 tk8.6 tcl8.6-dev tk8.6-dev tcl8.6-doc tk8.6-doc
