@@ -20,6 +20,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Install tcl
+      run: |
+        sudo apt-get update
+        sudo apt-get install tcl8.6 tk8.6 tcl8.6-dev tk8.6-dev tcl8.6-doc tk8.6-doc
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
