@@ -3,15 +3,16 @@ To append instructions in modulefile.
 """
 import os
 from pathlib import Path
-from typing import Tuple
+from typing import Any, List, Tuple
 
-from ..tools import get_std_name
-from . import get_module_filename, get_parser
+from venvmod.tools import get_std_name, logger
 from venvmod.modulefile import add_command
+
+from . import get_module_filepath, get_parser
 
 def append_command(arguments: Tuple[str, str, str],
                    description: str,
-                   help_arguments: str,
+                   positionals: List[Tuple[str, Any, str, Any]],
                    command: str):
     """Append a command to a modulefile.
 
@@ -22,27 +23,30 @@ def append_command(arguments: Tuple[str, str, str],
         else ``(virtual_env, appli, arguments)`` given as str
     description : str
         Description of the command provided to ``get_parser`` function if ``arguments`` is None.
-    help_arguments : str
-        Help of the command provided to ``get_parser`` function if ``arguments`` is None.
+    positionals: List[Tuple[str, Any, str, Any]], optional
+        list of positionals ('name', default, 'help', nargs), by default None
     command : str
         Name of the command
     """
     if arguments is None:
         options = get_parser(description=description,
-                             help_arguments=help_arguments,
+                             positionals=positionals,
                              with_appli=True)
-        arguments = " ".join(options.arguments)
-        appli = options.appli
         virtual_env = options.virtual_env
+        logger.debug("append_command virtual_env %s", virtual_env)
+        appli = options.appli
+        logger.debug("append_command appli %s", appli)
+        arguments = ""
+        for positional in positionals:
+            values = vars(options)[positional[0]]
+            logger.debug("append_command positional %s %s", positional, values)
+            arguments += " " + " ".join(values)
     else:
         virtual_env, appli, arguments = arguments
 
-    filename=get_module_filename(virtual_env=Path(virtual_env).absolute(),
-                                             appli_name=appli)
-    if not Path(filename).exists():
-        raise FileNotFoundError(f"modulefile {filename} not found.")
+    filepath=get_module_filepath(virtual_env=Path(virtual_env).absolute(), appli_name=appli)
 
-    add_command(filename=filename, line=f"{command} {arguments}")
+    add_command(filename=filepath, line=f"{command} {arguments}")
 
 
 def module_use(arguments: Tuple[str, str, str] = None):
@@ -57,7 +61,7 @@ def module_use(arguments: Tuple[str, str, str] = None):
     """
     append_command(arguments,
                    description="Add dir(s) to MODULEPATH variable.",
-                   help_arguments="path1 path2 ...",
+                   positionals=[("PATH", [], "List of paths to use to locate modules", '+')],
                    command="module use")
 
 
@@ -73,7 +77,7 @@ def module_load(arguments: Tuple[str, str, str] = None):
     """
     append_command(arguments,
                    description="Load modulefile(s).",
-                   help_arguments="module1 module2 ...",
+                   positionals=[("MODULE", [], "List of environment module to load", '+')],
                    command="module load")
 
 
@@ -89,7 +93,9 @@ def source_sh(arguments: Tuple[str, str, str] = None):
     """
     append_command(arguments,
                    description="Script(s) to source.",
-                   help_arguments="SHELL script [arg...]",
+                   positionals=[("SHELL", [], "Shell name", 1),
+                                ("SCRIPT", [], "Script path", 1),
+                                ("ARG", [], "Script arguments", 1),],
                    command="source-sh")
 
 
@@ -105,14 +111,15 @@ def prepend_path(arguments: Tuple[str, str, str] = None):
     """
     append_command(arguments,
                    description="Prepend value to environment variable.",
-                   help_arguments="ENV_VAR paths/to/add/No1 paths/to/add/No2 ...",
+                   positionals=[("ENV_VAR", [], "Variable to prepend", 1),
+                                ("PATH", [], "List of paths to prepend", '+')],
                    command="prepend-path")
 
 
 def append_path(arguments: Tuple[str, str, str] = None):
     """Add a 'append-path' command to a modulefile.
 
-    PEnv var + paths to append are given as str in the last value of ``arguments``.
+    Env var + paths to append are given as str in the last value of ``arguments``.
 
     Parameters
     ----------
@@ -121,7 +128,8 @@ def append_path(arguments: Tuple[str, str, str] = None):
     """
     append_command(arguments,
                    description="Append value to environment variable.",
-                   help_arguments="ENV_VAR paths/to/add/No1 paths/to/add/No2 ...",
+                   positionals=[("ENV_VAR", [], "Variable to append", 1),
+                                ("PATH", [], "List of paths to append", '+')],
                    command="append-path")
 
 
@@ -137,7 +145,8 @@ def setenv(arguments: Tuple[str, str, str] = None):
     """
     append_command(arguments,
                    description="Define environment variable.",
-                   help_arguments="ENV_VAR value",
+                   positionals=[("VARIABLE", [], "Environment variable to define", 1),
+                                ("VALUE", [], "Value associated to the variable", 1)],
                    command="setenv")
 
 
@@ -153,7 +162,8 @@ def remove_path(arguments: Tuple[str, str, str] = None):
     """
     append_command(arguments,
                    description="Remove value from environment variable.",
-                   help_arguments="ENV_VAR value",
+                   positionals=[("VARIABLE", [], "Environment variable to modify", 1),
+                                ("PATH", [], "Path to remove from variable", 1)],
                    command="remove-path")
 
 
@@ -169,11 +179,12 @@ def set_aliases(arguments: Tuple[str, str, str] = None):
     """
     append_command(arguments,
                    description="Define aliases.",
-                   help_arguments="alias command",
+                   positionals=[("ALIAS", [], "Alias name", 1),
+                                ("VALUE", [], "Alias value", 1)],
                    command="set-aliases")
 
 
-def read_env(arguments: Tuple[str, str] = None):
+def read_env(arguments: Tuple[str, str] = None):  # pylint: disable=too-many-branches
     """Add commands to a modulefile from environment variables.
 
     Parse ``os.environ`` to look at variable starting with 'appli' (case insensitive) name.
@@ -212,11 +223,8 @@ def read_env(arguments: Tuple[str, str] = None):
         virtual_env, appli = arguments
 
     # List env vars
-    appli_env_vars = {}
-    for envvar, value in os.environ.items():
-        if not get_std_name(envvar).startswith(appli):
-            continue
-        appli_env_vars[envvar] = value
+    appli_env_vars = {envvar: value for envvar, value in os.environ.items()
+                      if get_std_name(envvar).startswith(appli)}
 
     # Source file in first
     for envvar, value in appli_env_vars.items():
@@ -241,23 +249,17 @@ def read_env(arguments: Tuple[str, str] = None):
                         prepend_path(arguments=(virtual_env, appli, f"{var_path} {var}"))
                 break
 
-        if envvar.endswith("MODULE_USE"):
-            module_use(arguments=(virtual_env, appli, value))
+        for suffix, function in {
+                "MODULE_USE": module_use,
+                "MODULEFILES": module_load}.items():
+            if envvar.endswith(suffix):
+                function(arguments=(virtual_env, appli, value))
 
-        if envvar.endswith("MODULEFILES"):
-            module_load(arguments=(virtual_env, appli, value))
-
-        if envvar.endswith("EXPORTS"):
-            for var in value.split():
-                if var:
-                    setenv(arguments=(virtual_env, appli, var.replace("=", " ")))
-
-        if envvar.endswith("ALIASES"):
-            for var in value.split():
-                if var:
-                    set_aliases(arguments=(virtual_env, appli, var.replace("=", " ")))
-
-        if envvar.endswith("REMOVE_PATHS"):
-            for var in value.split():
-                if var:
-                    remove_path(arguments=(virtual_env, appli, var.replace("=", " ")))
+        for suffix, function in {
+                "EXPORTS": setenv,
+                "ALIASES": set_aliases,
+                "REMOVE_PATHS":remove_path}.items():
+            if envvar.endswith(suffix):
+                for var in value.split():
+                    if var:
+                        function(arguments=(virtual_env, appli, var.replace("=", " ")))

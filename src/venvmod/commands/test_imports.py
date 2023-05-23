@@ -1,4 +1,4 @@
-
+"""Tests import of Pyhton packages."""
 import importlib
 from typing import List
 
@@ -29,11 +29,11 @@ def _test_module_import(module_name: str, verbose: bool) -> str:
         error = err
 
     if verbose:
-        print(">>> import {}:".format(module_name))
+        print(f">>> import {module_name}:")
         if error:
-            print("  FAILED {}".format(error))
+            print(f"  FAILED {error}")
         else:
-            print("  {}".format(module.__file__))
+            print(f"  {module.__file__}")
     return error
 
 def test_imports(arguments: List[str] = None) -> int:
@@ -51,10 +51,10 @@ def test_imports(arguments: List[str] = None) -> int:
     """
     if arguments is None:
         options = get_parser(description="Test module import.",
-                             help_arguments="List of Python modules to test.",
+                             positionals=[("MODULE", [], "List of Python modules to test.", '+')],
                              with_appli=False,
                              with_verbose=True)
-        arguments = options.arguments
+        arguments = options.MODULE
 
     if options.verbose:
         print("Testing env :")
@@ -67,4 +67,3 @@ def test_imports(arguments: List[str] = None) -> int:
             failed[module] = error
 
     return len(failed)
-

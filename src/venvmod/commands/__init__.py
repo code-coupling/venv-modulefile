@@ -1,3 +1,5 @@
+"""This module defines commands available to cli.
+"""
 import argparse
 import logging
 from pathlib import Path
@@ -6,8 +8,9 @@ from typing import Any, List, Tuple
 from ..modulefile import get_module_file_directory
 from ..tools import logger, get_std_name
 
-def get_parser(description: str,
-               help_arguments: str = None,
+def get_parser(# name: str,  # pylint: disable=too-many-arguments
+               description: str,  # pylint: disable=too-many-arguments
+               positionals: List[Tuple[str, Any, str, Any]] = None,
                with_appli: bool = False,
                with_verbose: bool = False,
                options: List[Tuple[str, Any, str]] = None,
@@ -18,8 +21,8 @@ def get_parser(description: str,
     ----------
     description : str
         Description of the command
-    help_arguments : str, optional
-        Help for the arguments, by default None
+    positionals: List[Tuple[str, Any, str, Any]], optional
+        list of positionals ('name', default, 'help', nargs), by default None
     with_appli : bool, optional
         True to enable '--appli' option, by default False
     with_verbose : bool, optional
@@ -37,16 +40,22 @@ def get_parser(description: str,
 
     parser = argparse.ArgumentParser(description=description)
 
-    parser.add_argument("virtual_env",
-                        help="Path to the virtual env to modify")
+    parser.add_argument("virtual_env", help="Path to the virtual env to modify")
+
     if with_verbose:
         parser.add_argument('--verbose', action='store_true', help='To display the result.')
 
     if with_appli:
         parser.add_argument('--appli', metavar='appli', default="",
                         help='Name of the appli modulefile (case insensitive)')
-    if help_arguments:
-        parser.add_argument('arguments', nargs='+', default=[], help=help_arguments)
+    if positionals:
+        for positional in positionals:
+            print("get_parser positional", positional)
+            parser.add_argument(positional[0],
+                                metavar=positional[0].replace("-","_"),
+                                default=positional[1],
+                                help=positional[2],
+                                nargs=positional[3])
 
     if options:
         for option in options:
@@ -66,7 +75,7 @@ def get_parser(description: str,
 
     return parsered
 
-def get_module_filename(virtual_env: Path, appli_name: str = None) -> str:
+def get_module_filepath(virtual_env: Path, appli_name: str = None) -> str:
     """_summary_
 
     Parameters
@@ -78,13 +87,13 @@ def get_module_filename(virtual_env: Path, appli_name: str = None) -> str:
 
     Returns
     -------
-    str
+    Path
         name of the module file associated to the appli
     """
     module_name = get_std_name(f"{virtual_env.name}-{appli_name}"
                                if appli_name and appli_name != virtual_env.name
                                else virtual_env.name)
-    print(f"module name = '{module_name}'")
-    print(f"appli name = '{appli_name}'")
-    print(f"venv name = '{virtual_env.name}'")
-    return str(get_module_file_directory(virtual_env=virtual_env) / module_name)
+
+    logger.debug("get_module_filepath: module name = '%s' appli name = '%s' venv name = '%s'",
+                 module_name, appli_name, virtual_env.name)
+    return get_module_file_directory(virtual_env=virtual_env) / module_name

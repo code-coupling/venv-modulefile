@@ -1,16 +1,16 @@
-
+"""Environment module modification/installation."""
 
 import os
 import shutil
-from packaging import version
 from pathlib import Path
 import pathlib
 import tarfile
 from typing import List
 
+from packaging import version
 import requests
 
-from .tools import (get_std_name, get_process_result, run_process, check_raise,
+from venvmod.tools import (get_std_name, get_process_result, run_process, check_raise,
                     get_shell_name, PACKAGE_NAME, logger)
 
 def get_module_file_directory(virtual_env: Path) -> Path:
@@ -37,7 +37,14 @@ def add_command(filename: Path, line: str):
         File to modify
     line : str
         Line to append
+
+    Raises
+    ------
+    FileNotFoundError
+        If filename is not found
     """
+    if not filename.exists():
+        raise FileNotFoundError(f"Can't add command to non exsting file {filename}.")
     with open(filename, mode='a', encoding='utf-8') as modulefile:
         modulefile.write(line + "\n")
 
@@ -71,12 +78,11 @@ def get_version_list(index: int = 0) -> List[int] or int:
     List[int] or int
         version numbers or version number if index > 0
     """
-    version = get_version()
-    version = [int(id) for id in version.split(".")]
-    return version[index-1] if index else version
+    version_list = [int(id) for id in get_version().split(".")]
+    return version_list[index-1] if index else version_list
 
 
-class ModuleInstaller:
+class ModuleInstaller:  # pylint: disable=too-few-public-methods
     """Class to install Environment Module.
     """
 
@@ -114,14 +120,15 @@ class ModuleInstaller:
                         exception_type=ValueError,
                         message="Version number for Modulefile must be >= 4.6"
                         )
-            build_directory = src_directory = self._cache_directory / f"modules-{self._version_or_path}"
+            src_directory = self._cache_directory / f"modules-{self._version_or_path}"
             if not src_directory.exists():
                 cwd = os.getcwd()
                 os.chdir(self._cache_directory)
                 try:
-                    file = tarfile.open(
+                    file = tarfile.open(  # pylint: disable=consider-using-with
                         fileobj=requests.get(
-                            url=f"https://github.com/cea-hpc/modules/releases/download/v{self._version_or_path}/modules-{self._version_or_path}.tar.gz",
+                            url="https://github.com/cea-hpc/modules/releases/download/"
+                                f"v{self._version_or_path}/modules-{self._version_or_path}.tar.gz",
                             stream=True).raw,
                         mode="r|gz")
                     try:
@@ -130,12 +137,14 @@ class ModuleInstaller:
                         file.close()
                 finally:
                     os.chdir(cwd)
+            build_directory = src_directory
 
         build_directory.mkdir(parents=True, exist_ok=True)
-        code = run_process(command=f"{src_directory}/configure --prefix={self._install_prefix} --with-python=$(which python3)",
-                        verbose=verbose,
-                        cwd=build_directory,
-                        do_raise=do_raise)
+        code = run_process(command=f"{src_directory}/configure --prefix={self._install_prefix}"
+                                   " --with-python=$(which python3)",
+                           verbose=verbose,
+                           cwd=build_directory,
+                           do_raise=do_raise)
         if code:
             return code
 
@@ -165,7 +174,7 @@ def upgrade_modulefile(virtual_env: Path, module_prefix: Path) -> int:
     check_raise(not activate_src.is_file(), AssertionError,
                 f'"activate" file {activate_src} not found.')
 
-    with open(activate_src, "r") as src_file:
+    with open(activate_src, "r", encoding='utf-8') as src_file:
         src_lines = src_file.readlines()
 
     tmp_path = virtual_env / "tmp" / PACKAGE_NAME
@@ -179,11 +188,11 @@ def upgrade_modulefile(virtual_env: Path, module_prefix: Path) -> int:
     check_raise(not os.path.isfile(init_file), AssertionError,
                 f'Environment Module "init" file {init_file} not found.')
 
-    with open(activate_tmp, "w") as tmp_file:
+    with open(activate_tmp, "w", encoding='utf-8') as tmp_file:
         for line in src_lines:
             tmp_file.write(line)
             if "you cannot run it directly" in line:
-                tmp_file.write("\n. {}{}$(ps -ocomm= -q $$)\n".format(init_file_path, os.sep))
+                tmp_file.write("\n"f". {init_file_path}{os.sep}$(ps -ocomm= -q $$)\n")
     pathlib.Path.replace(activate_tmp, activate_src)
 
     return 0
@@ -240,13 +249,13 @@ def create_modulefile(virtual_env: Path,
 
     to_replace = ""
     if log_load:
-        log_load = log_load.replace('[', '\[').replace(']', '\]')
+        log_load = log_load.replace('[', r'\[').replace(']', r'\]')
         to_replace = ( 'if { [ module-info mode load ] } {\n'
                       f'    puts stderr "{log_load}"\n'
                        '}')
     module_file = module_file.replace("__log_load__", to_replace)
 
-    with open(module_file_name, "w") as mod_file:
+    with open(module_file_name, "w", encoding='utf-8') as mod_file:
         mod_file.write(module_file)
         return 0
 
@@ -299,12 +308,12 @@ def upgrade_venv(virtual_env: Path):  # pylint: disable=too-many-branches,too-ma
     load_module = LOAD_MODULE_TEMPLATE.replace("__module_name__", modulefile_name)
     use_module = USE_MODULE_TEMPLATE.replace("__module_dir__", str(module_directory))
 
-    with open(activate_src, "r") as src_file:
+    with open(activate_src, "r", encoding='utf-8') as src_file:
         file_read = src_file.read()
         check_raise(header_line in file_read, AssertionError,
                     f"{virtual_env} is already a venv-modulefile environment.")
 
-    with open(activate_src, "r") as src_file:
+    with open(activate_src, "r", encoding='utf-8') as src_file:
         src_lines = src_file.readlines()
 
     tmp_path = virtual_env / "tmp" / PACKAGE_NAME
@@ -312,7 +321,7 @@ def upgrade_venv(virtual_env: Path):  # pylint: disable=too-many-branches,too-ma
 
     activate_tmp = tmp_path / "activate"
 
-    with open(activate_tmp, "w") as tmp_file:
+    with open(activate_tmp, "w", encoding='utf-8') as tmp_file:
 
         def _write_in_file(tmp_file, line, to_write):
             if to_write:
@@ -381,4 +390,3 @@ _test_activate_status
 
     shutil.copyfile(activate_tmp, activate_src)
     shutil.rmtree(tmp_path)
-    return

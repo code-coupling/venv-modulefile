@@ -2,11 +2,12 @@
 """
 import logging
 from pathlib import Path
-import shellingham
 from subprocess import run as _run_process, CompletedProcess, PIPE
 from typing import List
 
-from . import __name__ as PACKAGE_NAME
+import shellingham
+
+from venvmod import __name__ as PACKAGE_NAME
 
 logger = logging.getLogger(PACKAGE_NAME)
 
@@ -54,7 +55,9 @@ def get_shell_command() -> str:
     return shellingham.detect_shell()[1]
 
 
-def get_process_result(command: str, capture_output: bool, cwd: str or Path = None) -> CompletedProcess:
+def get_process_result(command: str,
+                       capture_output: bool,
+                       cwd: str or Path = None) -> CompletedProcess:
     """Run procces and get results
 
     Parameters
@@ -73,7 +76,7 @@ def get_process_result(command: str, capture_output: bool, cwd: str or Path = No
     """
 
     pipe = PIPE if capture_output else None
-    return _run_process([get_shell_command(), '-c', command], stderr=pipe, stdout=pipe, cwd=cwd)
+    return _run_process([get_shell_command(), '-c', command], stderr=pipe, stdout=pipe, cwd=cwd)  # pylint: disable=subprocess-run-check
 
 
 def run_process(command: str, verbose: bool, do_raise: bool, cwd: str or Path = None) -> int:
@@ -98,7 +101,7 @@ def run_process(command: str, verbose: bool, do_raise: bool, cwd: str or Path = 
 
     result = get_process_result(command=command, capture_output=not verbose, cwd=cwd)
     if do_raise:
-        result.check_returncode
+        result.check_returncode()
 
     return result.returncode
 

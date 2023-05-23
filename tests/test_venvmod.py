@@ -8,7 +8,7 @@ from typing import List
 
 import venvmod
 
-def venvmod_cmd(args: List[str], xfail: bool):
+def venvmod_cmd(args: List[str], xfail: bool, err_msg: str = None):
     """Execute command
 
     Parameters
@@ -24,6 +24,10 @@ def venvmod_cmd(args: List[str], xfail: bool):
     if not success:
         print("stderr", result.stderr.decode())
         print("stdout", result.stdout.decode())
+
+    if err_msg:
+        assert err_msg in result.stderr.decode()
+
     assert success
 
 
@@ -39,7 +43,8 @@ def test_venvmod_cmds():
             shutil.rmtree(venv_path / subdir)
 
     # xfail before initialize
-    venvmod_cmd(args=["venvmod-cmd-setenv", str(venv_path), "VAR", "value"], xfail=True)
+    venvmod_cmd(args=["venvmod-cmd-setenv", str(venv_path), "VAR", "value"],
+                xfail=True, err_msg="Can\'t add command to non exsting file")
 
     # Initialize
     venvmod_cmd(args=["venvmod-initialize", str(venv_path)], xfail=False)
@@ -47,12 +52,16 @@ def test_venvmod_cmds():
     assert (venv_path / "etc" / "modulefiles").exists()
     assert (venv_path / "etc" / "modulefiles" / venv_path.name.lower().replace("_","-")).exists()
 
+    venvmod_cmd(args=["venvmod-cmd-setenv", str(venv_path), "TEST_VAR", "test_value"], xfail=False)
+
     appli_name = "Ap-p_Li.1"
 
     # xfail before add-appli
-    venvmod_cmd(args=["venvmod-cmd-setenv", str(venv_path), "--appli", appli_name, "VAR", "value"],
-                xfail=True)
+    venvmod_cmd(args=["venvmod-cmd-setenv", str(venv_path),
+                      "--appli", appli_name, "TEST_VAR", "test_value"],
+                xfail=True, err_msg="Can\'t add command to non exsting file")
 
-    venvmod_cmd(args=["venvmod-add-appli", str(venv_path), appli_name], xfail=False)
-    venvmod_cmd(args=["venvmod-cmd-setenv", str(venv_path), "--appli", appli_name, "VAR", "value"],
+    venvmod_cmd(args=["venvmod-add-appli", str(venv_path), appli_name, "--verbose"], xfail=False)
+    venvmod_cmd(args=["venvmod-cmd-setenv", str(venv_path),
+                      "--appli", appli_name, "TEST_VAR", "test_value"],
                 xfail=False)
