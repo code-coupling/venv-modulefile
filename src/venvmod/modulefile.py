@@ -59,10 +59,11 @@ def get_version() -> str:
                             stderr=subprocess.PIPE, stdout=subprocess.PIPE, check=False)
 
     logger.debug("get_version: %s\n%s\n%s", result, result.stderr.decode(), result.stdout.decode())
-    if 'VERSION=' in result.stderr.decode().split()[0]:  # version < 4.0
-        return result.stderr.decode().split()[0].split("=")[1]
-    if 'Modules' == result.stderr.decode().split()[0]:
-        return result.stderr.decode().split()[2]
+    if result.returncode == 0:
+        if 'VERSION=' in result.stderr.decode().split()[0]:  # version < 4.0
+            return result.stderr.decode().split()[0].split("=")[1]
+        if 'Modules' == result.stderr.decode().split()[0]:
+            return result.stderr.decode().split()[2]
     return "0.0.0"
 
 
@@ -125,7 +126,7 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
                         ["make", "clean"],
                         ["make"],
                         ["make", "install"]]:
-            subprocess.run(command, stderr=pipe, stdout=pipe, cwd=build_directory, check=True)
+            subprocess.run([get_shell_command(), "-c", " ".join(command)], stderr=pipe, stdout=pipe, cwd=build_directory, check=True)
 
 
 def upgrade_modulefile(virtual_env: Path, module_prefix: Path):
