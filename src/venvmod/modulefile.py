@@ -119,11 +119,13 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
         build_directory.mkdir(parents=True, exist_ok=True)
 
         pipe = subprocess.PIPE if not verbose else None
-        for command in [f"{src_directory}/configure --prefix={self._install_prefix}"
-                        " --with-python=$(which python3)",
-                        "make clean && make && make install"]:
-            subprocess.run(command, shell=True, stderr=pipe, stdout=pipe,
-                           cwd=build_directory, check=True)
+        for command in [[f"{src_directory}/configure",
+                         f"--prefix={self._install_prefix}",
+                         "--with-python=$(which python3)"],
+                        ["make", "clean"],
+                        ["make"],
+                        ["make", "install"]]:
+            subprocess.run(command, stderr=pipe, stdout=pipe, cwd=build_directory, check=True)
 
 
 def upgrade_modulefile(virtual_env: Path, module_prefix: Path):
