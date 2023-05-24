@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from typing import Dict, List
 
-import venvmod  # pylint: disable=unused-import
+from venvmod.tools import get_shell_command
 
 def get_results(result: subprocess.CompletedProcess, xfail: bool = False) -> bool:
     """Gets result informations.
@@ -250,7 +250,7 @@ def test_venvmod_cmds():
     venvmod_cmd(args=["venvmod-add-appli", str(venv_path), "appli-3",
                       "--read-env", "--verbose"], xfail=False, env=create_subenv("APPLI_3"))
 
-    result=subprocess.run(args=[".", str(venv_path / 'bin' / 'activate')],  # pylint: disable=subprocess-run-check
+    result=subprocess.run(args=[get_shell_command(), "-c", f". {(venv_path / 'bin' / 'activate')}"],  # pylint: disable=subprocess-run-check
                             stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     assert get_results(result=result)
 

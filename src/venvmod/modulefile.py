@@ -126,7 +126,8 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
                         ["make", "clean"],
                         ["make"],
                         ["make", "install"]]:
-            subprocess.run([get_shell_command(), "-c", " ".join(command)], stderr=pipe, stdout=pipe, cwd=build_directory, check=True)
+            subprocess.run([get_shell_command(), "-c", " ".join(command)],
+                           stderr=pipe, stdout=pipe, cwd=build_directory, check=True)
 
 
 def upgrade_modulefile(virtual_env: Path, module_prefix: Path):
