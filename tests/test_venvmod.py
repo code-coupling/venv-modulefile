@@ -53,7 +53,7 @@ def venvmod_cmd(args: List[str], xfail: bool, err_msg: str = None, env: Dict[str
 
     assert success
 
-def all_venvmod_commands(venv_path: Path, appli: str = None):
+def all_venvmod_commands(venv_path: Path, test_scripts: List, appli: str = None):
     """Tests all cli venvmod commands.
 
     Parameters
@@ -81,10 +81,6 @@ def all_venvmod_commands(venv_path: Path, appli: str = None):
                       "test_module"] + appli, xfail=False)
     venvmod_cmd(args=["venvmod-cmd-module-load", venv_pathname,
                       "test_module1", "test_module2"] + appli, xfail=False)
-
-    test_scripts = ["test_script", "test_script1", "test_script2",]
-    for index, test_script in enumerate(test_scripts):
-        test_scripts[index] = (venv_path / "etc" / "modulefiles" / test_script)
 
     venvmod_cmd(args=["venvmod-cmd-source-sh", venv_pathname] + appli,
                 xfail=True, err_msg="the following arguments are required: SHELL, SCRIPT")
@@ -193,7 +189,7 @@ def test_venvmod_cmds():
     test_scripts = ["test_script", "test_script1", "test_script2",]
     (venv_path / "etc" / "modulefiles").mkdir(exist_ok=True, parents=True)
     for index, test_script in enumerate(test_scripts):
-        test_scripts[index] = (venv_path / "etc" / "modulefiles" / test_script)
+        test_scripts[index] = venv_path / "etc" / "modulefiles" / test_script
         test_scripts[index].write_text(data="echo $@\n", encoding='utf-8')
     for test_module in ["test_module", "test_module1", "test_module2",]:
         (venv_path / "etc" / "modulefiles" / test_module).write_text(
@@ -224,7 +220,7 @@ def test_venvmod_cmds():
 
     venvmod_cmd(args=["venvmod-cmd-setenv", str(venv_path), "TEST_VAR", "test_value"], xfail=False)
 
-    all_venvmod_commands(venv_path)
+    all_venvmod_commands(venv_path, test_scripts)
 
     appli_name = "Ap-p_Li.1"
 
@@ -238,7 +234,7 @@ def test_venvmod_cmds():
                       "--appli", appli_name, "TEST_VAR", "test_value"],
                 xfail=False)
 
-    all_venvmod_commands(venv_path, appli=appli_name)
+    all_venvmod_commands(venv_path, test_scripts, appli=appli_name)
 
     # Appli 2 : load from env var
     venvmod_cmd(args=["venvmod-add-appli", str(venv_path), "appli-2", "--verbose"], xfail=False)
