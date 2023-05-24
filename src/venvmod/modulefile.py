@@ -107,7 +107,8 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
                         fileobj=requests.get(
                             url="https://github.com/cea-hpc/modules/releases/download/"
                                 f"v{self._version_or_path}/modules-{self._version_or_path}.tar.gz",
-                            stream=True).raw,
+                            stream=True,
+                            timeout=120.0).raw,
                         mode="r|gz")
                     try:
                         file.extractall()
