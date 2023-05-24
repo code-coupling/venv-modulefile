@@ -4,13 +4,13 @@ import os
 import shutil
 from pathlib import Path
 import pathlib
+import subprocess
 import tarfile
-from typing import List
 
 from packaging import version
 import requests
 
-from venvmod.tools import (get_std_name, get_process_result, run_process, check_raise,
+from venvmod.tools import (get_std_name, get_shell_command, check_raise,
                            get_shell_name, PACKAGE_NAME, logger)
 
 
@@ -30,25 +30,21 @@ def get_module_file_directory(virtual_env: Path) -> Path:
     return virtual_env.absolute() / "etc" / "modulefiles"
 
 
-def add_command(filename: Path, line: str):
-    """Appends a command to a modulefile
+ACTIVATE_HEADER_LINE = (f"# This file is generated from {PACKAGE_NAME}"
+                        " from regular venv or virtualenv file.")
+
+
+def test_if_already_init(virtual_env: Path):
+    """checks if venv-modulefile is already initialized.
 
     Parameters
     ----------
-    filename : Path
-        File to modify
-    line : str
-        Line to append
-
-    Raises
-    ------
-    FileNotFoundError
-        If filename is not found
+    virtual_env : Path
+        Path to virtual env
     """
-    if not filename.exists():
-        raise FileNotFoundError(f"Can't add command to non exsting file {filename}.")
-    with open(filename, mode='a', encoding='utf-8') as modulefile:
-        modulefile.write(line + "\n")
+    with (virtual_env / "bin" / "activate").open(mode="r", encoding='utf-8') as src_file:
+        check_raise(ACTIVATE_HEADER_LINE in src_file.read(), AssertionError,
+                    f"{virtual_env} is already a venv-modulefile environment.")
 
 
 def get_version() -> str:
@@ -59,32 +55,15 @@ def get_version() -> str:
     str
         version as 'x.y.z', '0.0.0' if not found
     """
-    result = get_process_result(command="module --version", capture_output=True)
-    logger.debug(f"get_version: {result}")
-    logger.debug(f"get_version: {result.stderr.decode()}")
-    logger.debug(f"get_version: {result.stdout.decode()}")
-    if 'VERSION=' in result.stderr.decode().split()[0]: # version < 4.0
+    result = subprocess.run([get_shell_command(), '-c', "module --version"],
+                            stderr=subprocess.PIPE, stdout=subprocess.PIPE, check=False)
+
+    logger.debug("get_version: %s\n%s\n%s", result, result.stderr.decode(), result.stdout.decode())
+    if 'VERSION=' in result.stderr.decode().split()[0]:  # version < 4.0
         return result.stderr.decode().split()[0].split("=")[1]
     if 'Modules' == result.stderr.decode().split()[0]:
         return result.stderr.decode().split()[2]
     return "0.0.0"
-
-
-def get_version_list(index: int = 0) -> List[int] or int:
-    """Gets version as list
-
-    Parameters
-    ----------
-    index : int, optional
-        index in version, by default 0
-
-    Returns
-    -------
-    List[int] or int
-        version numbers or version number if index > 0
-    """
-    version_list = [int(id) for id in get_version().split(".")]
-    return version_list[index-1] if index else version_list
 
 
 class ModuleInstaller:  # pylint: disable=too-few-public-methods
@@ -100,20 +79,13 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
         self._install_prefix: Path = Path(install_prefix)
         self._cache_directory: Path = Path(cache_directory)
 
-    def run(self, verbose: bool = False, do_raise: bool = True) -> int:
+    def run(self, verbose: bool = False):
         """run installer
 
         Parameters
         ----------
         verbose : bool, optional
             True to enable verbosity, by default False
-        do_raise : bool, optional
-            True to raise if fails, by default True
-
-        Returns
-        -------
-        int
-            return code
         """
 
         self._cache_directory.mkdir(parents=True, exist_ok=True)
@@ -145,21 +117,16 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
             build_directory = src_directory
 
         build_directory.mkdir(parents=True, exist_ok=True)
-        code = run_process(command=f"{src_directory}/configure --prefix={self._install_prefix}"
-                                   " --with-python=$(which python3)",
-                           verbose=verbose,
-                           cwd=build_directory,
-                           do_raise=do_raise)
-        if code:
-            return code
 
-        return run_process(command="make clean && make && make install",
-                           verbose=verbose,
-                           cwd=build_directory,
-                           do_raise=do_raise)
+        pipe = subprocess.PIPE if not verbose else None
+        for command in [f"{src_directory}/configure --prefix={self._install_prefix}"
+                        " --with-python=$(which python3)",
+                        "make clean && make && make install"]:
+            subprocess.run(command, shell=True, stderr=pipe, stdout=pipe,
+                           cwd=build_directory, check=True)
 
 
-def upgrade_modulefile(virtual_env: Path, module_prefix: Path) -> int:
+def upgrade_modulefile(virtual_env: Path, module_prefix: Path):
     """Upgrade modulefile in venv
 
     Parameters
@@ -168,11 +135,6 @@ def upgrade_modulefile(virtual_env: Path, module_prefix: Path) -> int:
         Path to virtual env
     module_prefix : Path
         Modulefile install prefix
-
-    Returns
-    -------
-    int
-        return code
     """
 
     activate_src = virtual_env / "bin" / "activate"
@@ -200,8 +162,6 @@ def upgrade_modulefile(virtual_env: Path, module_prefix: Path) -> int:
                 tmp_file.write("\n"f". {init_file_path}{os.sep}$(ps -ocomm= -q $$)\n")
     pathlib.Path.replace(activate_tmp, activate_src)
 
-    return 0
-
 
 MODULE_TEMPLATES = {"TCL": """#%Module -*- tcl -*-
 ##
@@ -222,14 +182,13 @@ __log_load__
 #conflicts, prereq
 conflict $category
 
-""",
-    }
+"""}
 
 
 def create_modulefile(virtual_env: Path,
                       module_name: str = PACKAGE_NAME,
                       module_category: str = None,
-                      log_load: str = "") -> int:
+                      log_load: str = ""):
     """Creates a modulefile.
 
     Parameters
@@ -257,32 +216,58 @@ def create_modulefile(virtual_env: Path,
         log_load = log_load.replace('[', r'\[').replace(']', r'\]')
         to_replace = ('if { [ module-info mode load ] } {\n'
                       f'    puts stderr "{log_load}"\n'
-                       '}')
+                      '}')
     module_file = module_file.replace("__log_load__", to_replace)
 
     with open(module_file_name, "w", encoding='utf-8') as mod_file:
         mod_file.write(module_file)
-        return 0
-
-    return 1
 
 
-USE_MODULE_TEMPLATE = """module use "__module_dir__"
-module_use_status=( $module_use_status $? )
-"""
-LOAD_MODULE_TEMPLATE = """module load '__module_name__'
-module_load_status=( $module_load_status $? )
-"""
+SHELL_TEST_DEACTIVATE_STATUS = """
+function _test_deactivate_status(){
+    module_status=( $module_unuse_status $module_unload_status )
+    unset module_unuse_status
+    unset module_unload_status
+    unset -f _test_deactivate_status
+    for return_code in $module_status ; do
+        if (( $return_code > 0 )); then return $return_code; fi
+    done
+}
 
-UNLOAD_MODULE_TEMPLATE = """    module unload '__module_name__'
-    module_unload_status=( $module_unload_status $? )
-"""
-UNUSE_MODULE_TEMPLATE = """    module unuse "__module_dir__"
-    module_unuse_status=( $module_unuse_status $? )
 """
 
+UNLOAD_MODULES = """
+    # Unload non-Python dependencies
+    module unload '{}'
+    module_unload_status=$?
+    module unuse '{}'
+    module_unuse_status=$?
 
-def upgrade_venv(virtual_env: Path):  # pylint: disable=too-many-branches,too-many-locals,too-many-statements
+"""
+
+LOAD_MODULES = """
+# Load non-Python dependencies
+module use '{}'
+module_use_status=$?
+module load '{}'
+module_load_status=$?
+"""
+
+SHELL_TEST_ACTIVATE_STATUS = """
+function _test_activate_status(){
+    module_status=( $module_use_status $module_load_status )
+    unset module_use_status
+    unset module_load_status
+    unset -f _test_activate_status
+    for return_code in $module_status ; do
+       if (( $return_code > 0 )); then return $return_code; fi
+    done
+}
+_test_activate_status
+"""
+
+
+def upgrade_venv(virtual_env: Path):
     """Ugrade virtual env with modulefile at activate and deactivate.
 
     Parameters
@@ -297,27 +282,15 @@ def upgrade_venv(virtual_env: Path):  # pylint: disable=too-many-branches,too-ma
     AssertionError
         If the module is already loaded frome the script but from another modulefile directory.
     """
-    bin_dir = virtual_env / "bin"
 
-    activate_src = bin_dir / "activate"
+    activate_src = virtual_env / "bin" / "activate"
     check_raise(not activate_src.is_file(), AssertionError,
-                f'"activate" file is expected in {bin_dir}.')
-
-    header_line = f"# This file is generated from {PACKAGE_NAME}"\
-                  " from regular venv or virtualenv file."
+                f'{activate_src} file not found.')
 
     modulefile_name = get_std_name(virtual_env.name)
     module_directory = get_module_file_directory(virtual_env=virtual_env)
-    unuse_module = UNUSE_MODULE_TEMPLATE.replace("__module_dir__", str(module_directory))
-    unload_module = UNLOAD_MODULE_TEMPLATE.replace("__module_name__", modulefile_name)
 
-    load_module = LOAD_MODULE_TEMPLATE.replace("__module_name__", modulefile_name)
-    use_module = USE_MODULE_TEMPLATE.replace("__module_dir__", str(module_directory))
-
-    with open(activate_src, "r", encoding='utf-8') as src_file:
-        file_read = src_file.read()
-        check_raise(header_line in file_read, AssertionError,
-                    f"{virtual_env} is already a venv-modulefile environment.")
+    test_if_already_init(virtual_env=virtual_env)
 
     with open(activate_src, "r", encoding='utf-8') as src_file:
         src_lines = src_file.readlines()
@@ -327,72 +300,26 @@ def upgrade_venv(virtual_env: Path):  # pylint: disable=too-many-branches,too-ma
 
     activate_tmp = tmp_path / "activate"
 
-    with open(activate_tmp, "w", encoding='utf-8') as tmp_file:
+    with activate_tmp.open("w", encoding='utf-8') as tmp_file:
 
-        def _write_in_file(tmp_file, line, to_write):
-            if to_write:
-                if to_write[0] == -1:
-                    tmp_file.write(to_write[1])
-                    tmp_file.write(line)
-                elif to_write[0] == 1:
-                    tmp_file.write(line)
-                    tmp_file.write(to_write[1])
-                elif to_write[0] == 0:
-                    tmp_file.write(line)
-
-        reset_is_done = 0
-        deactivate_nondestructive = 0
         for count, line in enumerate(src_lines):
-            to_write = None
+            to_write = ()
             if count == 2:
-                to_write = (-1, f"{header_line}\n")
+                to_write = (0, f"{ACTIVATE_HEADER_LINE}\n")
             elif "deactivate () {" in line:
-                to_write = (-1, """
-function _test_deactivate_status(){
-module_status=( $module_unuse_status $module_unload_status )
-unset module_unuse_status
-unset module_unload_status
-unset -f _test_deactivate_status
-for return_code in $module_status ; do
-    if (( $return_code > 0 )); then return $return_code; fi
-done
-}\n\n""")
+                to_write = (0, SHELL_TEST_DEACTIVATE_STATUS)
             elif "unset -f deactivate" in line:
                 to_write = (1, "        _test_deactivate_status\n        return $?\n")
             elif "reset old environment variables" in line:
-                to_write = (-1, "\n    # Unload non-Python dependencies\n"
-                           + unload_module + unuse_module + "\n")
-                reset_is_done += 1
+                to_write = (0, UNLOAD_MODULES.format(modulefile_name, str(module_directory)))
             elif "deactivate nondestructive" in line:
-                to_write = (1, "\n# Load non-Python dependencies\n" + use_module + load_module)
-                deactivate_nondestructive += 1
+                to_write = (1, LOAD_MODULES.format(str(module_directory), modulefile_name))
             else:
                 to_write = (0, "")
 
-            _write_in_file(tmp_file, line, to_write)
+            tmp_file.write(line + to_write[1] if to_write[0] else to_write[1] + line)
 
-        if reset_is_done != 1:
-            logger.error(
-                "'reset old environment variables' has been found %s"
-                " times in activate script. It is expectet to be 1 time.", reset_is_done)
-        if deactivate_nondestructive != 1:
-            logger.error(
-                "'deactivate nondestructive' has been found %s"
-                " times in activate script. It is expectet to be 1 time.",
-                deactivate_nondestructive)
-
-        tmp_file.write("""
-function _test_activate_status(){
-    module_status=( $module_use_status $module_load_status )
-    unset module_use_status
-    unset module_load_status
-    unset -f _test_activate_status
-    for return_code in $module_status ; do
-       if (( $return_code > 0 )); then return $return_code; fi
-    done
-}
-_test_activate_status
-""")
+        tmp_file.write(SHELL_TEST_ACTIVATE_STATUS)
 
     shutil.copyfile(activate_tmp, activate_src)
     shutil.rmtree(tmp_path)

@@ -9,7 +9,7 @@ from ..tools import get_std_name
 from . import get_parser
 from .append_module import module_load, read_env as read_env_vars
 from ..modulefile import (get_version, ModuleInstaller, upgrade_modulefile, create_modulefile,
-                          upgrade_venv)
+                          upgrade_venv, test_if_already_init)
 
 from ..tools import PACKAGE_NAME, check_raise, remove_duplicates
 
@@ -51,27 +51,23 @@ def initialize(virtual_env: Path = None,
             version_or_path = options.modulefile_version
         read_env = options.read_env
 
+    test_if_already_init(virtual_env=virtual_env)
+
     if version.parse(get_version()) < version.parse("14.6"):
 
         install_prefix = virtual_env / "opt" / "modulefiles"
         if not (install_prefix / "init").exists():
-            code = ModuleInstaller(install_prefix=install_prefix,
-                                   version_or_path=version_or_path,
-                                   cache_directory=virtual_env / ".cache").run(
-                                       verbose=options.verbose, do_raise=True)
-            if code:
-                return code
+            ModuleInstaller(install_prefix=install_prefix,
+                            version_or_path=version_or_path,
+                            cache_directory=virtual_env / ".cache").run(
+                                verbose=options.verbose)
 
-        code = upgrade_modulefile(virtual_env=virtual_env, module_prefix=install_prefix)
-        if code:
-            return code
+        upgrade_modulefile(virtual_env=virtual_env, module_prefix=install_prefix)
 
-    code = create_modulefile(virtual_env=virtual_env,
-                             module_name=get_std_name(virtual_env.name),
-                             module_category=PACKAGE_NAME,
-                             log_load=options.activate_log)
-    if code:
-        return code
+    create_modulefile(virtual_env=virtual_env,
+                      module_name=get_std_name(virtual_env.name),
+                      module_category=PACKAGE_NAME,
+                      log_load=options.activate_log)
 
     if read_env:
         read_env_vars(arguments=(virtual_env, get_std_name(virtual_env.name)))
@@ -81,7 +77,7 @@ def initialize(virtual_env: Path = None,
 
 def add_appli(virtual_env: Path = None,
               applis: List[str] = None,
-              read_env: bool = False):
+              read_env: bool = False) -> int:
     """Add application modulefiles to the environment.
 
     This call also use the :func:`venvmod.commands.append_module.read_env` function for each appli.
@@ -114,10 +110,9 @@ def add_appli(virtual_env: Path = None,
     for appli in remove_duplicates(options.APPLI + (applis if applis else [])):
         appli_name = get_std_name(appli)
         module_name = f"{virtual_env_name}-{appli_name}"
-        code = create_modulefile(virtual_env=virtual_env,
-                                 module_name=module_name,
-                                 module_category=f"{PACKAGE_NAME}-{appli_name}")
-        if code:
+        if create_modulefile(virtual_env=virtual_env,
+                             module_name=module_name,
+                             module_category=f"{PACKAGE_NAME}-{appli_name}"):
             fails.append(appli)
 
         if read_env:
@@ -127,3 +122,4 @@ def add_appli(virtual_env: Path = None,
     check_raise(condition=len(fails) > 0,
                 exception_type=RuntimeError,
                 message=f"The installation of the folowing appli failed : {fails}")
+    return 0

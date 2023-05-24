@@ -43,7 +43,7 @@ The list of available commands is the following:
   - `venvmod-cmd-module-use`: adds a search path for modulefile
   - `venvmod-cmd-remove-path`: removes path from environment variable
   - `venvmod-cmd-setenv`: defines an environment variable
-  - `venvmod-cmd-set-aliases`: defines an alias
+  - `venvmod-cmd-set-alias`: defines an alias
   - `venvmod-cmd-source-sh`: sources a script
 
 - `venvmod-cmd-read-env`: reads modifications to do from environment variable:
@@ -52,7 +52,7 @@ The list of available commands is the following:
   - `[NAME]_MODULEFILES`: ``module load`` for each element '/path/' separated by ' '
   - `[NAME]_SOURCEFILES`: ``source-sh`` for each element 'shell script [args...]' separated by ';'
   - `[NAME]_EXPORTS`: ``setenv`` for each element 'var=value' separated by ' '
-  - `[NAME]_ALIASES`: ``set-aliases`` for each element 'var="value"' separated by ' '
+  - `[NAME]_ALIASES`: ``set-alias`` for each element 'var="value"' separated by ' '
   - `[NAME]_REMOVE_PATHS`: ``remove-path`` for each element 'var=value' separated by ' '
   where `[NAME]` is the name of the environment module (case insensitive, "-" and "." are replaced by "_").
 

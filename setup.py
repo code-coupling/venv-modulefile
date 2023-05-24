@@ -181,7 +181,7 @@ setup(
             "venvmod-cmd-append-path=venvmod.commands.append_module:append_path",
             "venvmod-cmd-setenv=venvmod.commands.append_module:setenv",
             "venvmod-cmd-remove-path=venvmod.commands.append_module:remove_path",
-            "venvmod-cmd-set-aliases=venvmod.commands.append_module:set_aliases",
+            "venvmod-cmd-set-alias=venvmod.commands.append_module:set_aliases",
             "venvmod-test-import=venvmod.commands.test_imports:test_imports",
         ],
     },

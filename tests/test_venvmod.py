@@ -1,4 +1,4 @@
-
+"""Test ``venvmod`` package"""
 
 import os
 from pathlib import Path
@@ -6,7 +6,29 @@ import shutil
 import subprocess
 from typing import Dict, List
 
-import venvmod
+import venvmod  # pylint: disable=unused-import
+
+def get_results(result: subprocess.CompletedProcess, xfail: bool = False) -> bool:
+    """Gets result informations.
+
+    Parameters
+    ----------
+    result : subprocess.CompletedProcess
+        Subprocess result
+    xfail : bool, optional
+        Expeted to fail if True, by default False
+
+    Returns
+    -------
+    bool
+        True if success
+    """
+    success = (result.returncode != 0) if xfail else (result.returncode == 0)
+    print(('\033[92m' if success else '\033[91m') + f"cmd: '{result.args[0]}' xfail: '{xfail}'")
+    for out_typ, content in {'stderr': result.stderr, 'stdout': result.stdout}.items():
+        print(f"{out_typ}: {content.decode()}")
+    print('\033[0m')
+    return success
 
 def venvmod_cmd(args: List[str], xfail: bool, err_msg: str = None, env: Dict[str, str] = None):
     """Execute command
@@ -22,12 +44,9 @@ def venvmod_cmd(args: List[str], xfail: bool, err_msg: str = None, env: Dict[str
     env : Dict[str, str]
         Environment to pass to subprocess, default = None
     """
-    result = subprocess.run(args=args + ["--verbose"],
+    result = subprocess.run(args=args + ["--verbose"],  # pylint: disable=subprocess-run-check
                  stderr=subprocess.PIPE, stdout=subprocess.PIPE, env=env)
-    success = (result.returncode != 0) if xfail else (result.returncode == 0)
-    if not success or True:
-        print("stderr", result.stderr.decode())
-        print("stdout", result.stdout.decode())
+    success = get_results(result=result, xfail=xfail)
 
     if err_msg:
         assert err_msg in result.stderr.decode()
@@ -47,68 +66,97 @@ def all_venvmod_commands(venv_path: Path, appli: str = None):
 
     appli = ["--appli", appli] if appli else []
 
-    venv_path = str(venv_path)
+    venv_pathname = str(venv_path)
 
-    venvmod_cmd(args=["venvmod-cmd-module-use", venv_path] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-module-use", venv_path, "/path/to/toto"] + appli, xfail=False)
-    venvmod_cmd(args=["venvmod-cmd-module-use", venv_path,
+    venvmod_cmd(args=["venvmod-cmd-module-use", venv_pathname] + appli,
+                xfail=True, err_msg="the following arguments are required: PATH")
+    venvmod_cmd(args=["venvmod-cmd-module-use", venv_pathname,
+                      "/path/to/toto"] + appli, xfail=False)
+    venvmod_cmd(args=["venvmod-cmd-module-use", venv_pathname,
                       "/path/to/toto1", "/path/to/toto2"] + appli, xfail=False)
 
-    venvmod_cmd(args=["venvmod-cmd-module-load", venv_path] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-module-load", venv_path, "test_module"] + appli, xfail=False)
-    venvmod_cmd(args=["venvmod-cmd-module-load", venv_path,
+    venvmod_cmd(args=["venvmod-cmd-module-load", venv_pathname] + appli,
+                xfail=True, err_msg="the following arguments are required: MODULE")
+    venvmod_cmd(args=["venvmod-cmd-module-load", venv_pathname,
+                      "test_module"] + appli, xfail=False)
+    venvmod_cmd(args=["venvmod-cmd-module-load", venv_pathname,
                       "test_module1", "test_module2"] + appli, xfail=False)
 
-    venvmod_cmd(args=["venvmod-cmd-source-sh", venv_path] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-source-sh", venv_path, "bash"] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-source-sh", venv_path,
-                      "bash", "test_script"] + appli, xfail=False)
-    venvmod_cmd(args=["venvmod-cmd-source-sh", venv_path,
-                      "bash", "test_script1", "arg"] + appli, xfail=False)
-    venvmod_cmd(args=["venvmod-cmd-source-sh", venv_path,
-                      "bash", "test_script2", "arg1", "arg2"] + appli, xfail=False)
+    test_scripts = ["test_script", "test_script1", "test_script2",]
+    for index, test_script in enumerate(test_scripts):
+        test_scripts[index] = (venv_path / "etc" / "modulefiles" / test_script)
 
-    venvmod_cmd(args=["venvmod-cmd-prepend-path", venv_path] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-prepend-path", venv_path, "PATH"] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-prepend-path", venv_path, "PATH", "value"] + appli, xfail=False)
-    venvmod_cmd(args=["venvmod-cmd-prepend-path", venv_path,
+    venvmod_cmd(args=["venvmod-cmd-source-sh", venv_pathname] + appli,
+                xfail=True, err_msg="the following arguments are required: SHELL, SCRIPT")
+    venvmod_cmd(args=["venvmod-cmd-source-sh", venv_pathname, "bash"] + appli,
+                xfail=True, err_msg="the following arguments are required: SCRIPT")
+    venvmod_cmd(args=["venvmod-cmd-source-sh", venv_pathname,
+                      "bash", f"{test_scripts[0]}"] + appli, xfail=False)
+    venvmod_cmd(args=["venvmod-cmd-source-sh", venv_pathname,
+                      "bash", f"{test_scripts[1]}", "arg"] + appli, xfail=False)
+    venvmod_cmd(args=["venvmod-cmd-source-sh", venv_pathname,
+                      "bash", f"{test_scripts[2]}", "arg1", "arg2"] + appli, xfail=False)
+
+    venvmod_cmd(args=["venvmod-cmd-prepend-path", venv_pathname] + appli,
+                xfail=True, err_msg="the following arguments are required: ENV_VAR, PATH")
+    venvmod_cmd(args=["venvmod-cmd-prepend-path", venv_pathname, "PATH"] + appli,
+                xfail=True, err_msg="the following arguments are required: PATH")
+    venvmod_cmd(args=["venvmod-cmd-prepend-path", venv_pathname,
+                      "PATH", "value"] + appli, xfail=False)
+    venvmod_cmd(args=["venvmod-cmd-prepend-path", venv_pathname,
                       "PATH", "value1", "value2"] + appli, xfail=False)
 
-    venvmod_cmd(args=["venvmod-cmd-append-path", venv_path] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-append-path", venv_path, "PATH"] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-append-path", venv_path, "PATH", "value"] + appli, xfail=False)
-    venvmod_cmd(args=["venvmod-cmd-append-path", venv_path,
+    venvmod_cmd(args=["venvmod-cmd-append-path", venv_pathname] + appli,
+                xfail=True, err_msg="the following arguments are required: ENV_VAR, PATH")
+    venvmod_cmd(args=["venvmod-cmd-append-path", venv_pathname, "PATH"] + appli,
+                xfail=True, err_msg="the following arguments are required: PATH")
+    venvmod_cmd(args=["venvmod-cmd-append-path", venv_pathname,
+                      "PATH", "value"] + appli, xfail=False)
+    venvmod_cmd(args=["venvmod-cmd-append-path", venv_pathname,
                       "PATH", "value1", "value2"] + appli, xfail=False)
 
-    venvmod_cmd(args=["venvmod-cmd-setenv", venv_path] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-setenv", venv_path, "TEST_VAR"] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-setenv", venv_path,
+    venvmod_cmd(args=["venvmod-cmd-setenv", venv_pathname] + appli,
+                xfail=True, err_msg="the following arguments are required: VARIABLE, VALUE")
+    venvmod_cmd(args=["venvmod-cmd-setenv", venv_pathname, "TEST_VAR"] + appli,
+                xfail=True, err_msg="the following arguments are required: VALUE")
+    venvmod_cmd(args=["venvmod-cmd-setenv", venv_pathname,
                       "TEST_VAR", "test_value"] + appli, xfail=False)
-    venvmod_cmd(args=["venvmod-cmd-setenv", venv_path,
-                      "TEST_VAR2", "test_value1", "test_value2"] + appli, xfail=True)
+    venvmod_cmd(args=["venvmod-cmd-setenv", venv_pathname,
+                      "TEST_VAR2", "test_value1", "test_value2"] + appli,
+                xfail=True, err_msg="unrecognized arguments: test_value2")
 
-    venvmod_cmd(args=["venvmod-cmd-remove-path", venv_path] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-remove-path", venv_path, "TEST_PATH"] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-remove-path", venv_path,
+    venvmod_cmd(args=["venvmod-cmd-remove-path", venv_pathname] + appli,
+                xfail=True, err_msg="the following arguments are required: VARIABLE, PATH")
+    venvmod_cmd(args=["venvmod-cmd-remove-path", venv_pathname, "TEST_PATH"] + appli,
+                xfail=True, err_msg="the following arguments are required: PATH")
+    venvmod_cmd(args=["venvmod-cmd-remove-path", venv_pathname,
                       "TEST_PATH", "test_path"] + appli, xfail=False)
-    venvmod_cmd(args=["venvmod-cmd-remove-path", venv_path,
-                      "TEST_PATH2", "test_path1", "test_path2"] + appli, xfail=True)
+    venvmod_cmd(args=["venvmod-cmd-remove-path", venv_pathname,
+                      "TEST_PATH2", "test_path1", "test_path2"] + appli,
+                xfail=True, err_msg="unrecognized arguments: test_path2")
 
-    venvmod_cmd(args=["venvmod-cmd-set-aliases", venv_path] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-set-aliases", venv_path, "test_cmd"] + appli, xfail=True)
-    venvmod_cmd(args=["venvmod-cmd-set-aliases", venv_path,
-                      "test_cmd", "'ls -altr'"] + appli, xfail=False)
-    venvmod_cmd(args=["venvmod-cmd-set-aliases", venv_path,
-                      "test_cmd", "'ls -altr'", "cmd2"] + appli, xfail=True)
+    venvmod_cmd(args=["venvmod-cmd-set-alias", venv_pathname] + appli,
+                xfail=True, err_msg="the following arguments are required: ALIAS, VALUE")
+    venvmod_cmd(args=["venvmod-cmd-set-alias", venv_pathname, "test_cmd"] + appli,
+                xfail=True, err_msg="the following arguments are required: VALUE")
+    venvmod_cmd(args=["venvmod-cmd-set-alias", venv_pathname,
+                      "test_cmd", "cmd1"] + appli, xfail=False)
+    venvmod_cmd(args=["venvmod-cmd-set-alias", venv_pathname,
+                      "test_cmd", "cmd1", "cmd2"] + appli,
+                xfail=True, err_msg="unrecognized arguments: cmd2")
 
+def check_venv() -> Path:
+    """Check virtual environment.
 
-def test_venvmod_cmds():
-    """Tests all commands
+    Returns
+    -------
+    Path
+        Path to the virtual environment.
 
     Raises
     ------
     EnvironmentError
-        If not run in a virtual environment.
+        If not executed in a virtual environment.
     """
 
     if "VIRTUAL_ENV" not in os.environ:
@@ -116,29 +164,60 @@ def test_venvmod_cmds():
 
     venv_path=Path(os.environ["VIRTUAL_ENV"])
 
-    for subdir in ["etc", "opt"]:
+    if (venv_path / "bin" / "_activate").exists():
+        shutil.copyfile(src=venv_path / "bin" / "_activate",
+                        dst=venv_path / "bin" / "activate")
+    else:
+        shutil.copyfile(src=venv_path / "bin" / "activate",
+                        dst=venv_path / "bin" / "_activate")
+
+    for subdir in ["etc", "opt", ".cache"]:
         if (venv_path / subdir).exists():
             shutil.rmtree(venv_path / subdir)
 
+    return venv_path
+
+def test_venvmod_cmds():
+    """Tests all commands."""
+
+    venv_path = check_venv()
+
     # xfail before initialize
     venvmod_cmd(args=["venvmod-cmd-setenv", str(venv_path), "VAR", "value"],
-                xfail=True, err_msg="Can\'t add command to non exsting file")
+                xfail=True, err_msg="You can\'t add command to non exsting modulefile")
+
+    # xfail not a venv
+    venvmod_cmd(args=["venvmod-initialize", "/not/a/dir"], xfail=True)
 
     # Initialize
-    sub_env = os.environ.copy()
-    venv_var_name = venv_path.name.upper().replace("-","_").replace(".","_")
-    sub_env[f"{venv_var_name}_LD_LIBRARY_PATH"] = "/path/to/lib1:/path/to/lib2"
-    sub_env[f"{venv_var_name}_PYTHONPATH"] = "/path/to/packages1:/path/to/packages2"
-    sub_env[f"{venv_var_name}_PATH"] = "/path/to/bin1:/path/to/bin2"
-    sub_env[f"{venv_var_name}_MODULE_USE"] = "/path/to/modules1 /path/to/modules2"
-    sub_env[f"{venv_var_name}_MODULEFILES"] = "module1 module2"
-    sub_env[f"{venv_var_name}_SOURCEFILES"] = "bash script1 arg1 arg2; bash script2"
-    sub_env[f"{venv_var_name}_EXPORTS"] = "VAR1=value1 VAR2=value2"
-    sub_env[f"{venv_var_name}_ALIASES"] = "alias-1='cmd1' alias-2='cmd2'"
-    sub_env[f"{venv_var_name}_REMOVE_PATHS"] = "PATH1=/obsolete/path"
+    test_scripts = ["test_script", "test_script1", "test_script2",]
+    (venv_path / "etc" / "modulefiles").mkdir(exist_ok=True, parents=True)
+    for index, test_script in enumerate(test_scripts):
+        test_scripts[index] = (venv_path / "etc" / "modulefiles" / test_script)
+        test_scripts[index].write_text(data="echo $@\n", encoding='utf-8')
+    for test_module in ["test_module", "test_module1", "test_module2",]:
+        (venv_path / "etc" / "modulefiles" / test_module).write_text(
+            data="#%Module -*- tcl -*-\n", encoding='utf-8')
+    def create_subenv(prefix: str):
+        sub_env = os.environ.copy()
+        sub_env.update({
+            f"{prefix}_LD_LIBRARY_PATH": "/path/to/lib1:/path/to/lib2",
+            f"{prefix}_PYTHONPATH": "/path/to/packages1:/path/to/packages2",
+            f"{prefix}_PATH": "/path/to/bin1:/path/to/bin2",
+            f"{prefix}_MODULE_USE": "/path/to/modules1 /path/to/modules2",
+            f"{prefix}_MODULEFILES": "test_module1 test_module2",
+            f"{prefix}_SOURCEFILES": f"bash {test_scripts[0]} arg1 arg2; bash {test_scripts[1]}",
+            f"{prefix}_EXPORTS": "VAR1=value1 VAR2=value2",
+            f"{prefix}_ALIASES": "alias-1='cmd1' alias-2='cmd2'",
+            f"{prefix}_REMOVE_PATHS": "PATH1=/obsolete/path",
+            })
+        return sub_env
     venvmod_cmd(args=["venvmod-initialize", str(venv_path),
-                      "--read-env", "True",
-                      "--activate-log", "This is test modulefile."], xfail=False)
+                      "--read-env", "--activate-log", "This is test modulefile."],
+                xfail=False,
+                env=create_subenv(venv_path.name.upper().replace("-","_").replace(".","_")))
+    venvmod_cmd(args=["venvmod-initialize", str(venv_path)],
+                xfail=True, err_msg="is already a venv-modulefile environment.")
 
     assert (venv_path / "etc" / "modulefiles").exists()
     assert (venv_path / "etc" / "modulefiles" / venv_path.name.lower().replace("_","-")).exists()
@@ -152,7 +231,7 @@ def test_venvmod_cmds():
     # xfail before add-appli
     venvmod_cmd(args=["venvmod-cmd-setenv", str(venv_path),
                       "--appli", appli_name, "TEST_VAR", "test_value"],
-                xfail=True, err_msg="Can\'t add command to non exsting file")
+                xfail=True, err_msg="You can\'t add command to non exsting modulefile")
 
     venvmod_cmd(args=["venvmod-add-appli", str(venv_path), appli_name, "--verbose"], xfail=False)
     venvmod_cmd(args=["venvmod-cmd-setenv", str(venv_path),
@@ -163,33 +242,25 @@ def test_venvmod_cmds():
 
     # Appli 2 : load from env var
     venvmod_cmd(args=["venvmod-add-appli", str(venv_path), "appli-2", "--verbose"], xfail=False)
-    sub_env = os.environ.copy()
-    sub_env["APPLI_2_LD_LIBRARY_PATH"] = "/path/to/lib1:/path/to/lib2"
-    sub_env["APPLI_2_PYTHONPATH"] = "/path/to/packages1:/path/to/packages2"
-    sub_env["APPLI_2_PATH"] = "/path/to/bin1:/path/to/bin2"
-    sub_env["APPLI_2_MODULE_USE"] = "/path/to/modules1 /path/to/modules2"
-    sub_env["APPLI_2_MODULEFILES"] = "module1 module2"
-    sub_env["APPLI_2_SOURCEFILES"] = "bash script1 arg1 arg2; bash script2"
-    sub_env["APPLI_2_EXPORTS"] = "VAR1=value1 VAR2=value2"
-    sub_env["APPLI_2_ALIASES"] = "alias-1='cmd1' alias-2='cmd2'"
-    sub_env["APPLI_2_REMOVE_PATHS"] = "PATH1=/obsolete/path"
+
     venvmod_cmd(args=["venvmod-cmd-read-env", venv_path, "--appli", "appli-2"],
-                xfail=False, env=sub_env)
+                xfail=False, env=create_subenv("APPLI_2"))
 
     # Appli 3 : load from env var at creation
-    sub_env = os.environ.copy()
-    sub_env["APPLI_3_LD_LIBRARY_PATH"] = "/path/to/lib1:/path/to/lib2"
-    sub_env["APPLI_3_PYTHONPATH"] = "/path/to/packages1:/path/to/packages2"
-    sub_env["APPLI_3_PATH"] = "/path/to/bin1:/path/to/bin2"
-    sub_env["APPLI_3_MODULE_USE"] = "/path/to/modules1 /path/to/modules2"
-    sub_env["APPLI_3_MODULEFILES"] = "module1 module2"
-    sub_env["APPLI_3_SOURCEFILES"] = "bash script1 arg1 arg2; bash script2"
-    sub_env["APPLI_3_EXPORTS"] = "VAR1=value1 VAR2=value2"
-    sub_env["APPLI_3_ALIASES"] = "alias-1='cmd1' alias-2='cmd2'"
-    sub_env["APPLI_3_REMOVE_PATHS"] = "PATH1=/obsolete/path"
-
     venvmod_cmd(args=["venvmod-add-appli", str(venv_path), "appli-3",
-                      "--read-env", "True", "--verbose"], xfail=False)
+                      "--read-env", "--verbose"], xfail=False, env=create_subenv("APPLI_3"))
+
+    result=subprocess.run(args=f". {str(venv_path / 'bin' / 'activate')}",  # pylint: disable=subprocess-run-check
+                            shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    assert get_results(result=result)
+
+    assert "This is test modulefile" in result.stderr.decode()
 
     venvmod_cmd(args=["venvmod-test-import", str(venv_path), "venvmod", "typing", "sys"],
                 xfail=False)
+
+    venvmod_cmd(args=["venvmod-test-import", str(venv_path), "not_a_module"],
+                xfail=True)
+
+if __name__ == "__main__":
+    test_venvmod_cmds()

@@ -33,9 +33,9 @@ def _test_module_import(module_name: str, verbose: bool) -> str:
         if error:
             print(f"  FAILED {error}")
         else:
-            if hasattr(module,"__file__"):
+            if hasattr(module, "__file__"):
                 print(f"  {module.__file__}")
-            elif hasattr(module,"__name__"):
+            elif hasattr(module, "__name__"):
                 print(f"  {module.__name__}")
     return error
 

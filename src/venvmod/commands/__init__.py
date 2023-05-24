@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, List, Tuple
 
 from ..modulefile import get_module_file_directory
-from ..tools import logger, get_std_name
+from ..tools import check_raise, logger, get_std_name
 
 
 def get_parser(  # name: str,  # pylint: disable=too-many-arguments
@@ -56,10 +56,16 @@ def get_parser(  # name: str,  # pylint: disable=too-many-arguments
 
     if options:
         for option in options:
-            parser.add_argument(f"--{option[0]}",
-                                metavar=option[0].replace("-", "_"),
-                                default=option[1],
-                                help=option[2])
+            if isinstance(option[1], bool):
+                parser.add_argument(f"--{option[0]}",
+                                    action='store_true' if not option[1] else 'store_false',
+                                    default=option[1],
+                                    help=option[2])
+            else:
+                parser.add_argument(f"--{option[0]}",
+                                    metavar=option[0].replace("-", "_"),
+                                    default=option[1],
+                                    help=option[2])
 
     parsered = parser.parse_args(args)
     if parsered.verbose:
@@ -67,13 +73,13 @@ def get_parser(  # name: str,  # pylint: disable=too-many-arguments
     else:
         logger.setLevel(logging.INFO)
 
-    if not Path(parsered.virtual_env).absolute().is_dir():
-        raise FileNotFoundError(f"virtual environment '{parsered.virtual_env}' does not exist.")
+    check_raise(not Path(parsered.virtual_env).absolute().is_dir(),
+                FileNotFoundError, f"virtual environment '{parsered.virtual_env}' does not exist.")
 
     return parsered
 
 
-def get_module_filepath(virtual_env: Path, appli_name: str = None) -> str:
+def get_module_filepath(virtual_env: Path, appli_name: str = None) -> Path:
     """_summary_
 
     Parameters

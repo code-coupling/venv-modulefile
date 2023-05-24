@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Any, List, Tuple
 
 from venvmod.tools import get_std_name, logger
-from venvmod.modulefile import add_command
 
 from . import get_module_filepath, get_parser
+from ..tools import check_raise
 
 
 def append_command(arguments: Tuple[str, str, str],
@@ -47,7 +47,13 @@ def append_command(arguments: Tuple[str, str, str],
 
     filepath = get_module_filepath(virtual_env=Path(virtual_env).absolute(), appli_name=appli)
 
-    add_command(filename=filepath, line=f"{command} {arguments}")
+    check_raise(not filepath.exists(), FileNotFoundError,
+                f"You can't add command to non exsting modulefile {filepath}."
+                f" You may need to run 'venvmod-initialize {virtual_env}'"
+                f" or 'venvmod-add-appli {virtual_env} {filepath.name}' first.")
+
+    with filepath.open(mode='a', encoding='utf-8') as modulefile:
+        modulefile.write(f"{command} {arguments}\n")
 
 
 def module_use(arguments: Tuple[str, str, str] = None):
@@ -169,7 +175,7 @@ def remove_path(arguments: Tuple[str, str, str] = None):
 
 
 def set_aliases(arguments: Tuple[str, str, str] = None):
-    """Add a 'set-aliases' command to a modulefile.
+    """Add a 'set-alias' command to a modulefile.
 
     Alias to define are given as str in the last value of ``arguments``.
 
@@ -182,7 +188,7 @@ def set_aliases(arguments: Tuple[str, str, str] = None):
                    description="Define aliases.",
                    positionals=[("ALIAS", [], "Alias name", 1),
                                 ("VALUE", [], "Alias value", 1)],
-                   command="set-aliases")
+                   command="set-alias")
 
 
 def read_env(arguments: Tuple[str, str] = None):  # pylint: disable=too-many-branches
@@ -196,7 +202,7 @@ def read_env(arguments: Tuple[str, str] = None):  # pylint: disable=too-many-bra
      - "MODULEFILES": ``module load``
      - "SOURCEFILES": ``source-sh`` for each element 'shell script [args...]' separated by ';'
      - "EXPORTS": ``setenv`` for each element 'var=value' separated by ' '
-     - "ALIASES": ``set-aliases`` for each element 'var=value' separated by ' '
+     - "ALIASES": ``set-alias`` for each element 'var=value' separated by ' '
      - "REMOVE_PATHS": ``remove-path`` for each element 'var=value' separated by ' '
 
     Examples
@@ -231,7 +237,17 @@ def read_env(arguments: Tuple[str, str] = None):  # pylint: disable=too-many-bra
     logger.debug("read_env: appli_env_vars = '%s'", appli_env_vars)
 
     # Source file in first
-    for envvar, value in appli_env_vars.items():
+    _read_src_files(virtual_env, appli_env_vars, appli)
+    # modules
+    _read_modules(virtual_env, appli_env_vars, appli)
+    # prepend
+    _read_prepend(virtual_env, appli_env_vars, appli)
+    # other, remove is at the end
+    _read_others(virtual_env, appli_env_vars, appli)
+
+
+def _read_src_files(virtual_env, appli_env_vars, appli):
+    for envvar, value in appli_env_vars.copy().items():
         if envvar.endswith("SOURCEFILES"):
             for var in value.split(";"):
                 if var:
@@ -239,27 +255,35 @@ def read_env(arguments: Tuple[str, str] = None):  # pylint: disable=too-many-bra
             appli_env_vars.pop(envvar)
             break
 
-    path_to_prepend = ["LD_LIBRARY_PATH", "PYTHONPATH", "PATH"]
-    for envvar, value in appli_env_vars.items():
 
-        for var_path in path_to_prepend:
+def _read_modules(virtual_env, appli_env_vars, appli):
+    for suffix, function in {
+            "MODULE_USE": module_use,
+            "MODULEFILES": module_load}.items():
+        for envvar, value in appli_env_vars.copy().items():
+            if envvar.endswith(suffix):
+                function(arguments=(virtual_env, appli, value))
+                appli_env_vars.pop(envvar)
+
+
+def _read_prepend(virtual_env, appli_env_vars, appli):
+    for var_path in ["LD_LIBRARY_PATH", "PYTHONPATH", "PATH"]:
+        for envvar, value in appli_env_vars.copy().items():
             if envvar.endswith(var_path):
                 for var in reversed(value.split(":")):
                     if var:
                         prepend_path(arguments=(virtual_env, appli, f"{var_path} {var}"))
-                break
+                appli_env_vars.pop(envvar)
 
-        for suffix, function in {
-                "MODULE_USE": module_use,
-                "MODULEFILES": module_load}.items():
-            if envvar.endswith(suffix):
-                function(arguments=(virtual_env, appli, value))
 
-        for suffix, function in {
+def _read_others(virtual_env, appli_env_vars, appli):
+    for suffix, function in {
                 "EXPORTS": setenv,
                 "ALIASES": set_aliases,
                 "REMOVE_PATHS": remove_path}.items():
+        for envvar, value in appli_env_vars.copy().items():
             if envvar.endswith(suffix):
                 for var in value.split():
                     if var:
                         function(arguments=(virtual_env, appli, var.replace("=", " ")))
+                appli_env_vars.pop(envvar)
