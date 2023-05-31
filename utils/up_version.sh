@@ -59,6 +59,8 @@ git tag ${version_name}
 # install current version in venv
 python3 -m pip install --upgrade ${project_root_dir}
 
+(cd ${project_root_dir} && tox)
+
 # Publish on pypi
 read -p "Do you want to publish version '${version_name}' ? (yes/[no]) " answer
 if [[ "${answer}" == "y"* ]]; then
