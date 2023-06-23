@@ -66,8 +66,8 @@ def get_version() -> str:
                 return result.stderr.decode().split()[0].split("=")[1]
             if 'Modules' == result.stderr.decode().split()[0]:
                 return result.stderr.decode().split()[2]
-    finally:  # pylint: disable=lost-exception
-        return "0.0.0"
+    finally:
+        return "0.0.0"  # pylint: disable=lost-exception
 
 
 class ModuleInstaller:  # pylint: disable=too-few-public-methods
