@@ -55,16 +55,20 @@ def get_version() -> str:
     str
         version as 'x.y.z', '0.0.0' if not found
     """
-    result = subprocess.run([get_shell_command(), '-c', "module --version"],
-                            stderr=subprocess.PIPE, stdout=subprocess.PIPE, check=False)
+    try:
+        result = subprocess.run([get_shell_command(), '-c', "module --version"],
+                                stderr=subprocess.PIPE, stdout=subprocess.PIPE, check=False)
 
-    logger.debug("get_version: %s\n%s\n%s", result, result.stderr.decode(), result.stdout.decode())
-    if result.returncode == 0:
-        if 'VERSION=' in result.stderr.decode().split()[0]:  # version < 4.0
-            return result.stderr.decode().split()[0].split("=")[1]
-        if 'Modules' == result.stderr.decode().split()[0]:
-            return result.stderr.decode().split()[2]
-    return "0.0.0"
+        logger.debug("get_version: %s\n%s\n%s", result, result.stderr.decode(), result.stdout.decode())
+        if result.returncode == 0:
+            if 'VERSION=' in result.stderr.decode().split()[0]:  # version < 4.0
+                return result.stderr.decode().split()[0].split("=")[1]
+            if 'Modules' == result.stderr.decode().split()[0]:
+                return result.stderr.decode().split()[2]
+    except Exception: # pylint: disable=bare-except
+        pass
+    finally:
+        return "0.0.0"
 
 
 class ModuleInstaller:  # pylint: disable=too-few-public-methods
