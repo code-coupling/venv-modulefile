@@ -195,8 +195,8 @@ setup(
     # maintainers, and where to support the project financially. The key is
     # what's used to render the link text on PyPI.
     project_urls={  # Optional
-        "Bug Reports": "https://github.com/roland-lenain/venv-modulefile/issues",
+        "Bug Reports": "https://github.com/code-coupling/venv-modulefile/issues",
         "Doc": "https://venv-modulefile.readthedocs.io/en/latest/index.html",
-        "Source": "https://github.com/roland-lenain/venv-modulefile",
+        "Source": "https://github.com/code-coupling/venv-modulefile",
     },
 )
