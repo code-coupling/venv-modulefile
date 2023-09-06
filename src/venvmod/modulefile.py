@@ -94,15 +94,16 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
 
         self._cache_directory.mkdir(parents=True, exist_ok=True)
         if Path(self._version_or_path).exists():
-            src_directory = Path(self._version_or_path)
-            build_directory = self._cache_directory / src_directory.name
+            build_directory = self._cache_directory / Path(self._version_or_path).name
+            shutil.copytree(Path(self._version_or_path), build_directory, symlinks=True)
         else:
             check_raise(condition=version.parse(self._version_or_path) < version.parse("4.6"),
                         exception_type=ValueError,
-                        message="Version number for Modulefile must be >= 4.6"
+                        message="Version number for Modulefile must be >= 4.6,"
+                                f" found {self._version_or_path}."
                         )
-            src_directory = self._cache_directory / f"modules-{self._version_or_path}"
-            if not src_directory.exists():
+            build_directory = self._cache_directory / f"modules-{self._version_or_path}"
+            if not build_directory.exists():
                 cwd = os.getcwd()
                 os.chdir(self._cache_directory)
                 try:
@@ -119,12 +120,9 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
                         file.close()
                 finally:
                     os.chdir(cwd)
-            build_directory = src_directory
-
-        build_directory.mkdir(parents=True, exist_ok=True)
 
         pipe = subprocess.PIPE if not verbose else None
-        for command in [[f"{src_directory}/configure",
+        for command in [[f"{build_directory}/configure",
                          f"--prefix={self._install_prefix}",
                          "--with-python=$(which python3)"],
                         ["make", "clean"],
