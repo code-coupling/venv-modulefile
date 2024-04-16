@@ -1,1 +1,4 @@
 include src/README.md
+include src/venvmod/modulefiles_src/modules-5.2.0.tar.gz
+include src/venvmod/modulefiles_src/modules-5.3.1.tar.gz
+include src/venvmod/modulefiles_src/modules-5.4.0.tar.gz

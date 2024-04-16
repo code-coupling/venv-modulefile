@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import sys
 from pathlib import Path
 import pathlib
 import subprocess
@@ -107,15 +108,26 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
                 cwd = os.getcwd()
                 os.chdir(self._cache_directory)
                 try:
-                    file = tarfile.open(  # pylint: disable=consider-using-with
-                        fileobj=requests.get(
-                            url="https://github.com/cea-hpc/modules/releases/download/"
-                                f"v{self._version_or_path}/modules-{self._version_or_path}.tar.gz",
-                            stream=True,
-                            timeout=120.0).raw,
-                        mode="r|gz")
+                    tar_file = (Path(__file__).parent.absolute().resolve() /
+                                "modulefiles_src" / f"modules-{self._version_or_path}.tar.gz")
+                    if tar_file.exists():
+                        file = tarfile.open(  # pylint: disable=consider-using-with
+                            tar_file,
+                            mode="r|gz")
+                    else:
+                        file = tarfile.open(  # pylint: disable=consider-using-with
+                            fileobj=requests.get(
+                                url="https://github.com/cea-hpc/modules/releases/download/"
+                                    f"v{self._version_or_path}/"
+                                    f"modules-{self._version_or_path}.tar.gz",
+                                stream=True,
+                                timeout=120.0).raw,
+                            mode="r|gz")
                     try:
-                        file.extractall()
+                        if sys.version_info >= (3, 8):
+                            file.extractall(filter='data')
+                        else:
+                            file.extractall()
                     finally:
                         file.close()
                 finally:
