@@ -3,12 +3,10 @@
 from pathlib import Path
 from typing import List
 
-from packaging import version
-
 from ..tools import get_std_name
 from . import get_parser
 from .append_module import module_load, read_env as read_env_vars
-from ..modulefile import (get_version, ModuleInstaller, upgrade_modulefile, create_modulefile,
+from ..modulefile import (ModuleInstaller, upgrade_modulefile, create_modulefile,
                           upgrade_venv, test_if_already_init)
 
 from ..tools import PACKAGE_NAME, check_raise, remove_duplicates
@@ -53,14 +51,12 @@ def initialize(virtual_env: Path = None,
 
     test_if_already_init(virtual_env=virtual_env)
 
-    if version.parse(get_version()) < version.parse("14.6"):
-
-        install_prefix = virtual_env / "opt" / "modulefiles"
-        if not (install_prefix / "init").exists():
-            ModuleInstaller(install_prefix=install_prefix,
-                            version_or_path=version_or_path,
-                            cache_directory=virtual_env / ".cache").run(
-                                verbose=options.verbose)
+    install_prefix = virtual_env / "opt" / "modulefiles"
+    if not (install_prefix / "init").exists():
+        ModuleInstaller(install_prefix=install_prefix,
+                        version_or_path=version_or_path,
+                        cache_directory=virtual_env / ".cache").run(
+                            verbose=options.verbose)
 
         upgrade_modulefile(virtual_env=virtual_env, module_prefix=install_prefix)
 

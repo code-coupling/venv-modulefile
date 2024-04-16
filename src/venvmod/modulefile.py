@@ -12,7 +12,7 @@ from packaging import version
 import requests
 
 from venvmod.tools import (get_std_name, get_shell_command, check_raise,
-                           get_shell_name, PACKAGE_NAME, logger)
+                           get_shell_name, PACKAGE_NAME)
 
 
 def get_module_file_directory(virtual_env: Path) -> Path:
@@ -46,30 +46,6 @@ def test_if_already_init(virtual_env: Path):
     with (virtual_env / "bin" / "activate").open(mode="r", encoding='utf-8') as src_file:
         check_raise(ACTIVATE_HEADER_LINE in src_file.read(), AssertionError,
                     f"{virtual_env} is already a venv-modulefile environment.")
-
-
-def get_version() -> str:
-    """Gets modulefile version
-
-    Returns
-    -------
-    str
-        version as 'x.y.z', '0.0.0' if not found
-    """
-    try:
-        result = subprocess.run([get_shell_command(), '-c', "module --version"],
-                                stderr=subprocess.PIPE, stdout=subprocess.PIPE, check=False)
-
-        logger.debug(
-            "get_version: %s\n%s\n%s", result, result.stderr.decode(), result.stdout.decode())
-        if result.returncode == 0:
-            if 'VERSION=' in result.stderr.decode().split()[0]:  # version < 4.0
-                return result.stderr.decode().split()[0].split("=")[1]
-            if 'Modules' == result.stderr.decode().split()[0]:
-                return result.stderr.decode().split()[2]
-    finally:
-        return "0.0.0"  # pylint: disable=lost-exception
-
 
 class ModuleInstaller:  # pylint: disable=too-few-public-methods
     """Class to install Environment Module.
