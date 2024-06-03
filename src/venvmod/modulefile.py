@@ -2,12 +2,12 @@
 
 import os
 import shutil
-import sys
 from pathlib import Path
 import pathlib
 import subprocess
 import tarfile
 
+import inspect
 from packaging import version
 import requests
 
@@ -101,7 +101,7 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
                                 timeout=120.0).raw,
                             mode="r|gz")
                     try:
-                        if sys.version_info >= (3, 8):
+                        if 'filter' in inspect.signature(file.extractall).parameters:
                             file.extractall(filter='data')
                         else:
                             file.extractall()
