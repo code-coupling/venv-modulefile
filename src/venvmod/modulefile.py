@@ -47,6 +47,7 @@ def test_if_already_init(virtual_env: Path):
         check_raise(ACTIVATE_HEADER_LINE in src_file.read(), AssertionError,
                     f"{virtual_env} is already a venv-modulefile environment.")
 
+
 class ModuleInstaller:  # pylint: disable=too-few-public-methods
     """Class to install Environment Module.
     """

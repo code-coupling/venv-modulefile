@@ -88,7 +88,6 @@ def add_appli(virtual_env: Path = None,
     read_env : bool, optional
         Read environment variables associated to the appli, by default False
     """
-
     if virtual_env is None:
         options = get_parser(description="Initialize Modulefile for an application.",
                              positionals=[("APPLI", [],
@@ -101,6 +100,8 @@ def add_appli(virtual_env: Path = None,
         virtual_env = Path(options.virtual_env).absolute()
         virtual_env_name = get_std_name(virtual_env.name)
         read_env = options.read_env
+    else:
+        virtual_env_name = virtual_env.name
 
     fails = []
     for appli in remove_duplicates(options.APPLI + (applis if applis else [])):
