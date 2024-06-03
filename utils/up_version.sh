@@ -61,6 +61,13 @@ python3 -m pip install --upgrade ${project_root_dir}
 
 (cd ${project_root_dir} && tox)
 
+# Push on origin
+read -p "Do you want to push version '${version_name}' ? (yes/[no]) " answer
+if [[ "${answer}" == "y"* ]]; then
+    git push origin
+    git push origin ${version_name}
+fi
+
 # Publish on pypi
 read -p "Do you want to publish version '${version_name}' ? (yes/[no]) " answer
 if [[ "${answer}" == "y"* ]]; then
@@ -70,11 +77,4 @@ if [[ "${answer}" == "y"* ]]; then
     python3 -m pip install --upgrade build twine
     python3 -m build
     python3 -m twine upload --repository pypi dist/*
-fi
-
-# Push on origin
-read -p "Do you want to push version '${version_name}' ? (yes/[no]) " answer
-if [[ "${answer}" == "y"* ]]; then
-    git push origin
-    git push origin ${version_name}
 fi
