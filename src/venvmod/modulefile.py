@@ -305,8 +305,8 @@ def upgrade_venv(virtual_env: Path):
                 to_write = (0, SHELL_TEST_DEACTIVATE_STATUS)
             elif "unset -f deactivate" in line:
                 to_write = (1, "        _test_deactivate_status\n        return $?\n")
-            elif "reset old environment variables" in line:
-                to_write = (0, UNLOAD_MODULES.format(modulefile_name, str(module_directory)))
+            elif "unset VIRTUAL_ENV" in line:
+                to_write = (1, UNLOAD_MODULES.format(modulefile_name, str(module_directory)))
             elif "deactivate nondestructive" in line:
                 to_write = (1, LOAD_MODULES.format(str(module_directory), modulefile_name))
             else:
