@@ -258,5 +258,23 @@ def test_venvmod_cmds():
     venvmod_cmd(args=["venvmod-test-import", str(venv_path), "not_a_module"],
                 xfail=True)
 
+    initial_path = os.environ['PATH']
+
+    result = subprocess.run(
+        f'. {venv_path}/bin/activate && echo "PATH=$PATH" && deactivate && echo "PATH=$PATH"',  # pylint: disable=subprocess-run-check
+        shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+
+    path_lines: List[str] = []
+    for line in result.stdout.decode().splitlines():
+        if line.startswith("PATH="):
+            path_lines.append(line)
+
+    assert len(path_lines) == 2
+    assert "value1:value2" in path_lines[0]
+    assert path_lines[0] != path_lines[1]
+    assert path_lines[1].replace("PATH=", "").replace(
+        f"{venv_path}/opt/modulefiles/bin:", "") == initial_path
+
+
 if __name__ == "__main__":
     test_venvmod_cmds()
