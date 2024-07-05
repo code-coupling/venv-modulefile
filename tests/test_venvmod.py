@@ -276,6 +276,8 @@ def test_venvmod_cmds():
         shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 
     path_lines: List[str] = []
+    print("result.stdout", result.stdout.decode())
+    print("result.stderr", result.stderr.decode())
     for line in result.stdout.decode().splitlines():
         if line.startswith("PATH="):
             path_lines.append(line)
