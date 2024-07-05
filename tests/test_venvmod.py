@@ -257,8 +257,8 @@ def test_venvmod_cmds():
     venvmod_cmd(args=["venvmod-add-appli", str(venv_path), "disconnected-appli",
                       "--disconnect", "--verbose"], xfail=False, env=create_subenv("APPLI_4"))
 
-    result = subprocess.run(
-        args=[get_shell_command(), "-c", f". {(venv_path / 'bin' / 'activate')}"],  # pylint: disable=subprocess-run-check
+    result = subprocess.run(  # pylint: disable=subprocess-run-check
+        args=[get_shell_command(), "-c", f". {(venv_path / 'bin' / 'activate')}"],
         stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     assert get_results(result=result)
 
@@ -278,14 +278,14 @@ def test_venvmod_cmds():
         executable=get_shell_command())
 
     path_lines: List[str] = []
-    print("result.stdout", result.stdout.decode())
-    print("result.stderr", result.stderr.decode())
-    print(Path(f"{venv_path}/bin/activate").read_text())
+    # print("result.stdout", result.stdout.decode())
+    # print("result.stderr", result.stderr.decode())
+    # print(Path(f"{venv_path}/bin/activate").read_text())
     for line in result.stdout.decode().splitlines():
         if line.startswith("PATH="):
             path_lines.append(line)
 
-    print(path_lines)
+    # print(path_lines)
     assert len(path_lines) == 2
     assert "value1:value2" in path_lines[0]
     assert path_lines[0] != path_lines[1]
