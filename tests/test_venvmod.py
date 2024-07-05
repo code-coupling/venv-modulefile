@@ -6,7 +6,9 @@ import shutil
 import subprocess
 from typing import Dict, List
 
+
 from venvmod.tools import get_shell_command
+
 
 def get_results(result: subprocess.CompletedProcess, xfail: bool = False) -> bool:
     """Gets result informations.
@@ -30,6 +32,7 @@ def get_results(result: subprocess.CompletedProcess, xfail: bool = False) -> boo
     print('\033[0m')
     return success
 
+
 def venvmod_cmd(args: List[str], xfail: bool, err_msg: str = None, env: Dict[str, str] = None):
     """Execute command
 
@@ -45,13 +48,14 @@ def venvmod_cmd(args: List[str], xfail: bool, err_msg: str = None, env: Dict[str
         Environment to pass to subprocess, default = None
     """
     result = subprocess.run(args=args + ["--verbose"],  # pylint: disable=subprocess-run-check
-                 stderr=subprocess.PIPE, stdout=subprocess.PIPE, env=env)
+                            stderr=subprocess.PIPE, stdout=subprocess.PIPE, env=env)
     success = get_results(result=result, xfail=xfail)
 
     if err_msg:
         assert err_msg in result.stderr.decode()
 
     assert success
+
 
 def all_venvmod_commands(venv_path: Path, test_scripts: List, appli: str = None):
     """Tests all cli venvmod commands.
@@ -141,6 +145,7 @@ def all_venvmod_commands(venv_path: Path, test_scripts: List, appli: str = None)
                       "test_cmd", "cmd1", "cmd2"] + appli,
                 xfail=True, err_msg="unrecognized arguments: cmd2")
 
+
 def check_venv() -> Path:
     """Check virtual environment.
 
@@ -158,7 +163,7 @@ def check_venv() -> Path:
     if "VIRTUAL_ENV" not in os.environ:
         raise EnvironmentError("Expected to be run a venv.")
 
-    venv_path=Path(os.environ["VIRTUAL_ENV"])
+    venv_path = Path(os.environ["VIRTUAL_ENV"])
 
     if (venv_path / "bin" / "_activate").exists():
         shutil.copyfile(src=venv_path / "bin" / "_activate",
@@ -173,6 +178,7 @@ def check_venv() -> Path:
 
     return venv_path
 
+
 def test_venvmod_cmds():
     """Tests all commands."""
 
@@ -186,14 +192,15 @@ def test_venvmod_cmds():
     venvmod_cmd(args=["venvmod-initialize", "/not/a/dir"], xfail=True)
 
     # Initialize
-    test_scripts = ["test_script", "test_script1", "test_script2",]
+    test_scripts = ["test_script", "test_script1", "test_script2"]
     (venv_path / "etc" / "modulefiles").mkdir(exist_ok=True, parents=True)
     for index, test_script in enumerate(test_scripts):
         test_scripts[index] = venv_path / "etc" / "modulefiles" / test_script
         test_scripts[index].write_text(data="echo $@\n", encoding='utf-8')
-    for test_module in ["test_module", "test_module1", "test_module2",]:
+    for test_module in ["test_module", "test_module1", "test_module2"]:
         (venv_path / "etc" / "modulefiles" / test_module).write_text(
             data="#%Module -*- tcl -*-\n", encoding='utf-8')
+
     def create_subenv(prefix: str):
         sub_env = os.environ.copy()
         sub_env.update({
@@ -211,12 +218,12 @@ def test_venvmod_cmds():
     venvmod_cmd(args=["venvmod-initialize", str(venv_path),
                       "--read-env", "--activate-log", "This is test modulefile."],
                 xfail=False,
-                env=create_subenv(venv_path.name.upper().replace("-","_").replace(".","_")))
+                env=create_subenv(venv_path.name.upper().replace("-", "_").replace(".", "_")))
     venvmod_cmd(args=["venvmod-initialize", str(venv_path)],
                 xfail=True, err_msg="is already a venv-modulefile environment.")
 
     assert (venv_path / "etc" / "modulefiles").exists()
-    assert (venv_path / "etc" / "modulefiles" / venv_path.name.lower().replace("_","-")).exists()
+    assert (venv_path / "etc" / "modulefiles" / venv_path.name.lower().replace("_", "-")).exists()
 
     venvmod_cmd(args=["venvmod-cmd-setenv", str(venv_path), "TEST_VAR", "test_value"], xfail=False)
 
