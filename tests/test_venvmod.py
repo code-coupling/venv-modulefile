@@ -279,6 +279,7 @@ def test_venvmod_cmds():
     path_lines: List[str] = []
     print("result.stdout", result.stdout.decode())
     print("result.stderr", result.stderr.decode())
+    print(Path(f"{venv_path}/bin/activate").read_text())
     for line in result.stdout.decode().splitlines():
         if line.startswith("PATH="):
             path_lines.append(line)
