@@ -274,7 +274,8 @@ def test_venvmod_cmds():
 
     result = subprocess.run(  # pylint: disable=subprocess-run-check
         f'. {venv_path}/bin/activate && echo "PATH=$PATH" && deactivate && echo "PATH=$PATH"',
-        shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+        executable=get_shell_command())
 
     path_lines: List[str] = []
     print("result.stdout", result.stdout.decode())
