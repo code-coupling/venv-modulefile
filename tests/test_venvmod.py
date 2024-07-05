@@ -273,6 +273,7 @@ def test_venvmod_cmds():
         if line.startswith("PATH="):
             path_lines.append(line)
 
+    print(path_lines)
     assert len(path_lines) == 2
     assert "value1:value2" in path_lines[0]
     assert path_lines[0] != path_lines[1]
