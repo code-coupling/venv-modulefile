@@ -257,8 +257,9 @@ def test_venvmod_cmds():
     venvmod_cmd(args=["venvmod-add-appli", str(venv_path), "disconnected-appli",
                       "--disconnect", "--verbose"], xfail=False, env=create_subenv("APPLI_4"))
 
-    result=subprocess.run(args=[get_shell_command(), "-c", f". {(venv_path / 'bin' / 'activate')}"],  # pylint: disable=subprocess-run-check
-                            stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    result = subprocess.run(
+        args=[get_shell_command(), "-c", f". {(venv_path / 'bin' / 'activate')}"],  # pylint: disable=subprocess-run-check
+        stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     assert get_results(result=result)
 
     assert "This is test modulefile" in result.stderr.decode()
