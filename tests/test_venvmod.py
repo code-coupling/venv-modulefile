@@ -246,6 +246,10 @@ def test_venvmod_cmds():
     venvmod_cmd(args=["venvmod-add-appli", str(venv_path), "appli-3",
                       "--read-env", "--verbose"], xfail=False, env=create_subenv("APPLI_3"))
 
+    # Appli 4 : disconnected appli
+    venvmod_cmd(args=["venvmod-add-appli", str(venv_path), "disconnected-appli",
+                      "--disconnect", "--verbose"], xfail=False, env=create_subenv("APPLI_4"))
+
     result=subprocess.run(args=[get_shell_command(), "-c", f". {(venv_path / 'bin' / 'activate')}"],  # pylint: disable=subprocess-run-check
                             stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     assert get_results(result=result)
@@ -260,8 +264,8 @@ def test_venvmod_cmds():
 
     initial_path = os.environ['PATH']
 
-    result = subprocess.run(
-        f'. {venv_path}/bin/activate && echo "PATH=$PATH" && deactivate && echo "PATH=$PATH"',  # pylint: disable=subprocess-run-check
+    result = subprocess.run(  # pylint: disable=subprocess-run-check
+        f'. {venv_path}/bin/activate && echo "PATH=$PATH" && deactivate && echo "PATH=$PATH"',
         shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 
     path_lines: List[str] = []

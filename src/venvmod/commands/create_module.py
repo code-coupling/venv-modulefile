@@ -73,7 +73,8 @@ def initialize(virtual_env: Path = None,
 
 def add_appli(virtual_env: Path = None,
               applis: List[str] = None,
-              read_env: bool = False) -> int:
+              read_env: bool = False,
+              disconnect: bool = False) -> int:
     """Add application modulefiles to the environment.
 
     This call also use the :func:`venvmod.commands.append_module.read_env` function for each appli.
@@ -87,6 +88,8 @@ def add_appli(virtual_env: Path = None,
         List of module file to create in addition to those given through cli, by default None
     read_env : bool, optional
         Read environment variables associated to the appli, by default False
+    disconnect : bool, optional
+        True to avoid loading appli when virtual env is loaded, by default False
     """
     if virtual_env is None:
         options = get_parser(description="Initialize Modulefile for an application.",
@@ -95,11 +98,14 @@ def add_appli(virtual_env: Path = None,
                              with_appli=False,
                              options=[
                                  ("read-env", False,
-                                  "Read environment variables. 'See cmd-read-env'")
+                                  "Read environment variables. 'See cmd-read-env'"),
+                                 ("disconnect", False,
+                                  "Disconnects applis loading at activate.")
                              ])
         virtual_env = Path(options.virtual_env).absolute()
         virtual_env_name = get_std_name(virtual_env.name)
         read_env = options.read_env
+        disconnect = options.disconnect
     else:
         virtual_env_name = virtual_env.name
 
@@ -114,7 +120,8 @@ def add_appli(virtual_env: Path = None,
 
         if read_env:
             read_env_vars(arguments=(virtual_env, appli_name))
-        module_load(arguments=(virtual_env, "", module_name))
+        if not disconnect:
+            module_load(arguments=(virtual_env, "", module_name))
 
     check_raise(condition=len(fails) > 0,
                 exception_type=RuntimeError,
