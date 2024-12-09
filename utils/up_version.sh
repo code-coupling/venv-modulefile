@@ -2,9 +2,9 @@
 set -euo pipefail
 unalias -a
 
-current_script_dir="$( cd "$( dirname "${0}" )" &> /dev/null && pwd )"
-project_root_dir="$(dirname ${current_script_dir})"
-version_file=${project_root_dir}/src/venvmod/VERSION
+readonly current_script_dir="$( cd "$( dirname "${0}" )" &> /dev/null && pwd )"
+readonly project_root_dir="$(dirname ${current_script_dir})"
+readonly version_file=${project_root_dir}/src/venvmod/VERSION
 
 ########################
 # Cli
@@ -13,7 +13,7 @@ if (( $# != 1 )); then
     echo "ERROR: You must provide exactly 1 argument: version number as x.y.z"
     exit 1
 fi
-version_name=$1
+readonly version_name=$1
 
 ########################
 # Main
@@ -48,7 +48,7 @@ if [ ! -d "${current_script_dir}/.venv_utils" ]; then
     python3 -m venv ${current_script_dir}/.venv_utils
 fi
 . ${current_script_dir}/.venv_utils/bin/activate
-pip install --upgrade pip setuptools
+pip install --upgrade pip setuptools tox
 
 # Tag the version
 echo ${version_name} > ${version_file}
@@ -66,6 +66,10 @@ read -p "Do you want to push version '${version_name}' ? (yes/[no]) " answer
 if [[ "${answer}" == "y"* ]]; then
     git push origin
     git push origin ${version_name}
+else
+    git reset --hard HEAD^
+    git tag -d ${version_name}
+    exit 0
 fi
 
 # Publish on pypi
@@ -77,4 +81,7 @@ if [[ "${answer}" == "y"* ]]; then
     python3 -m pip install --upgrade build twine
     python3 -m build
     python3 -m twine upload --repository pypi dist/*
+else
+    echo "You pushed a version tag but this version has not been published!"
+    exit 1
 fi
