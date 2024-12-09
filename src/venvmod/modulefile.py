@@ -102,7 +102,7 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
                             mode="r|gz")
                     try:
                         if 'filter' in inspect.signature(file.extractall).parameters:
-                            file.extractall(filter='data')
+                            file.extractall(filter='tar')
                         else:
                             file.extractall()
                     finally:
