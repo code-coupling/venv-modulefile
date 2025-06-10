@@ -153,7 +153,7 @@ def upgrade_modulefile(virtual_env: Path, module_prefix: Path):
     with open(activate_tmp, "w", encoding='utf-8') as tmp_file:
         for line in src_lines:
             tmp_file.write(line)
-            if "you cannot run it directly" in line:
+            if "you cannot run it directly" in line.lower():
                 tmp_file.write("\n"f". {init_file_path}{os.sep}$(ps -ocomm= -q $$)\n")
     pathlib.Path.replace(activate_tmp, activate_src)
 
