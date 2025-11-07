@@ -71,7 +71,7 @@ function generate_sphinx(){
         sed -i 's/Contents\:/Contents\:\n\n   '${module}'\/'${module}'.rst/' ${doc_build_dir}/index.rst
     done
 
-    sed -i 's/Contents\:/Contents\:\n\n   md_doc\/introduction.md/' ${doc_build_dir}/index.rst
+    sed -i 's/Contents\:/Contents\:\n\n   md_doc\/introduction.md\n\n   md_doc\/cli.md/' ${doc_build_dir}/index.rst
 
 }
 
