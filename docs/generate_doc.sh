@@ -51,7 +51,7 @@ function add_sources(){
 function generate_sphinx(){
     cd ${doc_build_dir}
     local options="--no-makefile --no-batchfile --quiet --no-sep"
-    local options="${options} --extensions=sphinx.ext.napoleon --extensions=sphinx_rtd_theme --extensions=myst_parser --extensions=numpydoc"
+    local options="${options} --extensions=sphinx.ext.napoleon --extensions=sphinx_rtd_theme --extensions=myst_parser --extensions=numpydoc --extensions=sphinxcontrib.programoutput"
     local options="${options} --ext-autodoc --ext-intersphinx --ext-doctest --ext-viewcode"
     local options="${options} --templatedir ${project_doc_dir}/templates"
     sphinx-quickstart --project ${project_name} -v ${project_version} --author ${project_author} ${options} .
@@ -61,6 +61,11 @@ function generate_sphinx(){
     fi
 
     # Custom generated files
+
+    sed -i '/Add your content using/d' ${doc_build_dir}/index.rst
+    sed -i '/reStructuredText/d' ${doc_build_dir}/index.rst
+    sed -i '/documentation for details./d' ${doc_build_dir}/index.rst
+
     # add sources in toctree
     for module in ${source_directories[@]}; do
         sed -i 's/Contents\:/Contents\:\n\n   '${module}'\/'${module}'.rst/' ${doc_build_dir}/index.rst

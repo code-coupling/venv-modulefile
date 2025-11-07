@@ -28,6 +28,7 @@ extensions = [
     'sphinx_rtd_theme',
     'myst_parser',
     'numpydoc',
+    'sphinxcontrib.programoutput',
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.doctest',
