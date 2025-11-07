@@ -3,7 +3,15 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# # -- Project information -----------------------------------------------------
+# {% if append_syspath -%}
+# -- Path setup --------------------------------------------------------------
+
+# import os
+# import sys
+# sys.path.insert(0, {{ module_path | repr }})
+
+{% endif -%}
+# -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 import venvmod
@@ -23,28 +31,33 @@ release = venvmod.__version__
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = [
-    'sphinx.ext.napoleon',
-    'sphinx_rtd_theme',
-    'myst_parser',
-    'numpydoc',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.doctest',
-    'sphinx.ext.viewcode',
-]
+extensions = [{% if extensions %}
+{%- for ext in extensions %}
+    '{{ ext }}',
+{%- endfor %}
+{% endif %}]
 
-templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+templates_path = ['{{ dot }}templates']
+exclude_patterns = [{{ exclude_patterns }}]
 
+{% if suffix != '.rst' -%}
+source_suffix = {{ suffix | repr }}
+{% endif -%}
 
+{% if root_doc != 'index' -%}
+root_doc = {{ root_doc | repr }}
+{% endif -%}
+
+{% if language -%}
+language = {{ language | repr }}
+{%- endif %}
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
-
+html_static_path = ['{{ dot }}static']
+{% if 'sphinx.ext.intersphinx' in extensions %}
 # -- Options for intersphinx extension ---------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#configuration
 
@@ -54,7 +67,13 @@ intersphinx_mapping = {
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
 
 }
+{% endif -%}
+{% if 'sphinx.ext.todo' in extensions %}
+# -- Options for todo extension ----------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/todo.html#configuration
 
+todo_include_todos = True
+{% endif %}
 autodoc_default_options = {
     'members': True,
     'member-order': 'bysource',

@@ -1,10 +1,11 @@
 .. venvmod documentation master file, created by
-   sphinx-quickstart on Thu May  4 10:33:33 2023.
+   sphinx-quickstart on Fri Nov  7 12:01:40 2025.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to venvmod's documentation!
-===================================
+venvmod documentation
+=====================
+
 
 .. toctree::
    :maxdepth: 2
@@ -14,11 +15,3 @@ Welcome to venvmod's documentation!
 
    src/src.rst
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

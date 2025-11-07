@@ -57,7 +57,8 @@ Three APIs are available.
 The cli is composed of commands starting by `venvmod-` prefix:
 
 - `venvmod-initialize <venv_name>` is used to initialize the virtual environment with modulefile.
-- `venvmod-add-appli <appli_name>` is used to add an appli (sub module) to the virtual env.
+- `venvmod-add-appli <appli_name>` is used to add an appli (sub module) to the virtual env
+(which can be removed with `venvmod-rm-appli`).
 - `venvmod-cmd-<name> [--appli appli_name] <venv_name> <args>` is used to add a command to the
   global module or an appli if `--appli` argument is provided.
 
