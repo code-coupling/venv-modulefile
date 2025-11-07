@@ -19,18 +19,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-latest]
-        # version not found : 3.8.6",
-        python-version: ["3.6", "3.6.8", "3.7", "3.8", "3.9", "3.10", "3.11", "3.11.2", "3.12"]
-        exclude:
-            - os: ubuntu-22.04
-              python-version: "3.6"
-            - os: ubuntu-22.04
-              python-version: "3.6.8"
-            - os: ubuntu-latest
-              python-version: "3.6"
-            - os: ubuntu-latest
-              python-version: "3.6.8"
+        os: [ubuntu-22.04, ubuntu-latest]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.11.2", "3.12"]
 
     steps:
     - uses: actions/checkout@v4

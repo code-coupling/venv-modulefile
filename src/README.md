@@ -57,7 +57,7 @@ The list of available commands is the following:
   where `[NAME]` is the name of the environment module (case insensitive, "-" and "." are replaced by "_").
 
 - `venvmod-add-appli` allows to create sub modulefile. `--appli` option of the above commands
-  permit to modify these modulefiles.
+  permit to modify these modulefiles. The appli can be removed unsing `venvmod-rm-appli`
 
 - `venvmod-test-import`: tests the import of modules given as argument
 

@@ -133,7 +133,7 @@ setup(
     # 'Programming Language' classifiers above, 'pip install' will check this
     # and refuse to install the project if the version does not match. See
     # https://packaging.python.org/guides/distributing-packages-using-setuptools/#python-requires
-    python_requires=">=3.6, <4",
+    python_requires=">=3.7, <4",
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is
     # installed, so they must be valid existing projects.
@@ -176,6 +176,7 @@ setup(
         "console_scripts": [
             "venvmod-initialize=venvmod.commands.create_module:initialize",
             "venvmod-add-appli=venvmod.commands.create_module:add_appli",
+            "venvmod-rm-appli=venvmod.commands.create_module:rm_appli",
             "venvmod-cmd-read-env=venvmod.commands.append_module:read_env",
             "venvmod-cmd-module-use=venvmod.commands.append_module:module_use",
             "venvmod-cmd-module-load=venvmod.commands.append_module:module_load",

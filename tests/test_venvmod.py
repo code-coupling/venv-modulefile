@@ -257,6 +257,20 @@ def test_venvmod_cmds():
     venvmod_cmd(args=["venvmod-add-appli", str(venv_path), "disconnected-appli",
                       "--disconnect", "--verbose"], xfail=False, env=create_subenv("APPLI_4"))
 
+    # Appli 5 : toremove appli
+    venvmod_cmd(args=["venvmod-add-appli", str(venv_path), "toremove-appli",
+                      "--verbose"], xfail=False) # add 1
+    venvmod_cmd(args=["venvmod-add-appli", str(venv_path), "toremove-appli1", "toremove-appli2",
+                      "--verbose"], xfail=False) # add 2
+    venvmod_cmd(args=["venvmod-add-appli", str(venv_path), "toremove-appli-d",
+                      "--disconnect", "--verbose"], xfail=False) # add disconnected
+    venvmod_cmd(args=["venvmod-rm-appli", str(venv_path), "toremove-appli", "toremove-appli-d",
+                      "--verbose"], xfail=False) # remove independant
+    venvmod_cmd(args=["venvmod-rm-appli", str(venv_path), "toremove-appli1",
+                      "--verbose"], xfail=False) # remove 1
+    venvmod_cmd(args=["venvmod-rm-appli", str(venv_path), "toremove-appli2",
+                      "--verbose"], xfail=False) # remove 2
+
     result = subprocess.run(  # pylint: disable=subprocess-run-check
         args=[get_shell_command(), "-c", f". {(venv_path / 'bin' / 'activate')}"],
         stderr=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -277,6 +291,8 @@ def test_venvmod_cmds():
         shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
         executable=get_shell_command())
 
+    assert result.returncode == 0, f"{result.stderr.decode().splitlines()}"
+
     path_lines: List[str] = []
     # print("result.stdout", result.stdout.decode())
     # print("result.stderr", result.stderr.decode())
@@ -286,7 +302,7 @@ def test_venvmod_cmds():
             path_lines.append(line)
 
     # print(path_lines)
-    assert len(path_lines) == 2
+    assert len(path_lines) == 2, f"{path_lines}, {result.stdout.decode().splitlines()}"
     assert "value1:value2" in path_lines[0]
     assert path_lines[0] != path_lines[1]
     assert path_lines[1].replace("PATH=", "").replace(
