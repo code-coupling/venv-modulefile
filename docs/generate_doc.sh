@@ -66,6 +66,7 @@ function generate_sphinx(){
     sed -i '/reStructuredText/d' ${doc_build_dir}/index.rst
     sed -i '/documentation for details./d' ${doc_build_dir}/index.rst
 
+    # sed -i 's/\:maxdepth\: 2/\:maxdepth\: 1/' ${doc_build_dir}/index.rst
     # add sources in toctree
     for module in ${source_directories[@]}; do
         sed -i 's/Contents\:/Contents\:\n\n   '${module}'\/'${module}'.rst/' ${doc_build_dir}/index.rst
