@@ -150,11 +150,12 @@ setup(
     # Similar to `install_requires` above, these must be valid existing
     # projects.
     extras_require={  # Optional
-        "docs": ["psutil==5.9.4",
-                 "sphinx-rtd-theme==1.1.1",
-                 "myst-parser==0.16.1",
-                 "numpydoc==1.1.0", ],
-        "test": ["psutil==5.9.4",
+        "docs": ["psutil~=7.0",
+                 "Sphinx~=8.0",
+                 "sphinx-rtd-theme~=3.0",
+                 "myst-parser~=4.0",
+                 "numpydoc~=1.0", ],
+        "test": ["psutil~=7.0",
                  "pylint>=2.13.9",
                  "pytest>=7.0.1",
                  "pytest-cov>=4.0.0",
