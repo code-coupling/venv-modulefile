@@ -116,8 +116,8 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
                  f"--prefix={self._install_prefix}",
                  f"--with-modulepath={self._install_prefix.parent.parent / 'etc' / 'modulefiles'}",
                  "--enable-modulespath",
-                 "--with-python=$(which python3)"] + (
-                     ["--enable-set-shell-startup"] if "BASH_ENV" in os.environ else []),
+                 "--with-python=$(which python3)",
+                 "--enable-set-shell-startup"],
                 ["make", "clean"],
                 ["make"],
                 ["make", "install"]]:
