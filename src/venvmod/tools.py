@@ -32,17 +32,6 @@ def check_raise(condition: bool, exception_type: Exception, message: str):
         raise exception_type(message)
 
 
-def get_shell_name() -> str:
-    """Gets current shell name.
-
-    Returns
-    -------
-    str
-        shell name
-    """
-    return shellingham.detect_shell()[0]
-
-
 def get_shell_command() -> str:
     """Gets current shell name.
 

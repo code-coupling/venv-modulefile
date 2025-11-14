@@ -11,8 +11,7 @@ import inspect
 from packaging import version
 import requests
 
-from venvmod.tools import (get_std_name, get_shell_command, check_raise,
-                           get_shell_name, PACKAGE_NAME)
+from venvmod.tools import (get_std_name, get_shell_command, check_raise, PACKAGE_NAME)
 
 
 def get_module_file_directory(virtual_env: Path) -> Path:
@@ -150,15 +149,11 @@ def upgrade_modulefile(virtual_env: Path, module_prefix: Path):
 
     init_file_path = module_prefix / "init"
 
-    init_file = init_file_path / get_shell_name()
-    check_raise(not os.path.isfile(init_file), AssertionError,
-                f'Environment Module "init" file {init_file} not found.')
-
     with open(activate_tmp, "w", encoding='utf-8') as tmp_file:
         for line in src_lines:
             tmp_file.write(line)
             if "you cannot run it directly" in line.lower():
-                tmp_file.write("\n"f". {init_file_path}{os.sep}$(ps -ocomm= -q $$)\n")
+                tmp_file.write("\n"f". {init_file_path / 'profile.sh'}\n")
     pathlib.Path.replace(activate_tmp, activate_src)
 
 
