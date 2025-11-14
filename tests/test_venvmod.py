@@ -179,7 +179,7 @@ def check_venv() -> Path:
     return venv_path
 
 
-def test_venvmod_cmds():
+def test_venvmod_cmds(): #  pylint: disable=too-many-statements
     """Tests all commands."""
 
     venv_path = check_venv()
