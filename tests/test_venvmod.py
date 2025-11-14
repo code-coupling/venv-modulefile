@@ -305,10 +305,12 @@ def test_venvmod_cmds():
     assert len(path_lines) == 2, f"{path_lines}, {result.stdout.decode().splitlines()}"
     assert "value1:value2" in path_lines[0]
     assert path_lines[0] != path_lines[1]
-    assert path_lines[1].replace("PATH=", "").replace(
-        f"{venv_path}/opt/modulefiles/bin:", "").replace(
-        "~", os.environ["HOME"]) == initial_path.replace(
-            "~", os.environ["HOME"])
+
+    new_path = path_lines[1].replace("PATH=", "").replace(f"{venv_path}/opt/modulefiles/bin:", "")
+    if "HOME" in os.environ:
+        new_path.replace("~", os.environ["HOME"])
+        initial_path.replace("~", os.environ["HOME"])
+    assert new_path == initial_path
 
 def test_subscript_module_version():
     """Tests if module version in sub script is correct."""
