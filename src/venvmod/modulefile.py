@@ -111,12 +111,16 @@ class ModuleInstaller:  # pylint: disable=too-few-public-methods
                     os.chdir(cwd)
 
         pipe = subprocess.PIPE if not verbose else None
-        for command in [[f"{build_directory}/configure",
-                         f"--prefix={self._install_prefix}",
-                         "--with-python=$(which python3)"],
-                        ["make", "clean"],
-                        ["make"],
-                        ["make", "install"]]:
+        for command in [
+                [f"{build_directory}/configure"] + [
+                 f"--prefix={self._install_prefix}",
+                 f"--with-modulepath={self._install_prefix.parent.parent / 'etc' / 'modulefiles'}",
+                 "--enable-modulespath",
+                 "--with-python=$(which python3)"] + (
+                     ["--enable-set-shell-startup"] if "BASH_ENV" in os.environ else []),
+                ["make", "clean"],
+                ["make"],
+                ["make", "install"]]:
             subprocess.run([get_shell_command(), "-c", " ".join(command)],
                            stderr=pipe, stdout=pipe, cwd=build_directory, check=True)
 

@@ -306,8 +306,28 @@ def test_venvmod_cmds():
     assert "value1:value2" in path_lines[0]
     assert path_lines[0] != path_lines[1]
     assert path_lines[1].replace("PATH=", "").replace(
-        f"{venv_path}/opt/modulefiles/bin:", "") == initial_path
+        f"{venv_path}/opt/modulefiles/bin:", "").replace(
+        "~", os.environ["HOME"]) == initial_path.replace(
+            "~", os.environ["HOME"])
 
+def test_subscript_module_version():
+    """Tests if module version in sub script is correct."""
+
+    venv_path = Path(os.environ["VIRTUAL_ENV"])
+
+    result1 = subprocess.run(  # pylint: disable=subprocess-run-check
+        f'. {venv_path}/bin/activate && echo "$(module --version)"',
+        shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+        executable=get_shell_command())
+    print(f"result1='''{result1.stderr}'''")
+
+    result2 = subprocess.run(  # pylint: disable=subprocess-run-check
+        f'. {venv_path}/bin/activate && echo "$({Path(__file__).resolve().parent / "test.sh"})"',
+        shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+        executable=get_shell_command())
+    print(f"result2='''{result2.stderr}'''")
+
+    assert result2.stderr == result1.stderr
 
 if __name__ == "__main__":
     test_venvmod_cmds()
