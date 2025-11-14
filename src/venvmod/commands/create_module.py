@@ -13,7 +13,7 @@ from ..tools import PACKAGE_NAME, check_raise, remove_duplicates, logger
 
 
 def initialize(virtual_env: Path = None,
-               version_or_path: str = "5.4.0",
+               version_or_path: str = "5.6.0",
                read_env: bool = False) -> int:
     """Initialize a venv-modulefile environment
 
@@ -24,7 +24,7 @@ def initialize(virtual_env: Path = None,
         else the path to the virtual env, by default None
     version_or_path : str, optional
         Modulefile version to use if not found or version < 4.6.
-        It can be a source directory to avoid donloading, by default "5.4.0"
+        It can be a source directory to avoid donloading, by default "5.6.0"
     read_env : bool, optional
         Read environment variables associated to the appli, by default False
 

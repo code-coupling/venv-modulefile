@@ -170,7 +170,8 @@ setup(
         "venvmod": ["VERSION",
                     "modulefiles_src/modules-5.2.0.tar.gz",
                     "modulefiles_src/modules-5.3.1.tar.gz",
-                    "modulefiles_src/modules-5.4.0.tar.gz"],
+                    "modulefiles_src/modules-5.4.0.tar.gz",
+                    "modulefiles_src/modules-5.6.0.tar.gz"],
     },
     # Entry points. The following would provide a command called `sample` which
     # executes the function `main` from this package when invoked:
